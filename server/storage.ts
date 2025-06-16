@@ -44,7 +44,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getDocument(id: number): Promise<Document | undefined> {
-    const [document] = await db.select().from(documents).where(eq(documents.id, id));
+    const [document] = await db
+      .select({
+        id: documents.id,
+        filename: documents.filename,
+        content: documents.content,
+        size: documents.size,
+        chunkCount: documents.chunkCount,
+        status: documents.status,
+        errorMessage: documents.errorMessage,
+        chapterTitle: documents.chapterTitle,
+        createdAt: documents.createdAt,
+      })
+      .from(documents)
+      .where(eq(documents.id, id));
     return document || undefined;
   }
 
@@ -114,7 +127,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllChunks(): Promise<DocumentChunk[]> {
-    return await db.select().from(documentChunks);
+    return await db
+      .select({
+        id: documentChunks.id,
+        documentId: documentChunks.documentId,
+        content: documentChunks.content,
+        embedding: documentChunks.embedding,
+        chunkIndex: documentChunks.chunkIndex,
+        sectionTitle: documentChunks.sectionTitle,
+      })
+      .from(documentChunks);
   }
 
   async deleteDocumentChunks(documentId: number): Promise<void> {
