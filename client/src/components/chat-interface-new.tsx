@@ -263,6 +263,12 @@ export default function ChatInterface() {
               type="submit"
               disabled={!input.trim() || sendMessage.isPending}
               className="px-6"
+              onClick={(e) => {
+                if (!input.trim()) {
+                  e.preventDefault();
+                  return;
+                }
+              }}
             >
               <Send className="w-4 h-4" />
             </Button>

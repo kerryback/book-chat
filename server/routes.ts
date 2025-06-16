@@ -103,8 +103,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/chat/messages", async (req, res) => {
     try {
       // Only validate content from request body, role is always "user" for incoming messages
-      const content = req.body.content;
-      if (!content || typeof content !== 'string') {
+      const content = req.body.message || req.body.content;
+      if (!content || typeof content !== 'string' || content.trim() === '') {
         return res.status(400).json({ message: "Content is required" });
       }
       
