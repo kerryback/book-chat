@@ -89,6 +89,40 @@ export default function ChatInterface() {
     },
   });
 
+  // File upload mutation
+  const uploadFile = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      
+      const response = await fetch("/api/documents/upload", {
+        method: "POST",
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`Upload failed: ${errorData}`);
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+      toast({
+        title: "Success",
+        description: "File uploaded and processed successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to upload file",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -120,16 +154,41 @@ export default function ChatInterface() {
           <div className="flex items-center gap-3">
             <Sparkles className="w-5 h-5 text-blue-600" />
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => clearHistory.mutate()}
-            disabled={clearHistory.isPending}
-            className="text-red-600 hover:text-red-700"
-          >
-            <Trash2 className="w-4 h-4 mr-2" />
-            Clear
-          </Button>
+          <div className="flex items-center gap-2">
+            <input
+              type="file"
+              accept=".qmd,.md"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  uploadFile.mutate(file);
+                }
+                e.target.value = '';
+              }}
+              style={{ display: 'none' }}
+              id="file-upload"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => document.getElementById('file-upload')?.click()}
+              disabled={uploadFile.isPending}
+              className="text-blue-600 hover:text-blue-700"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Upload .qmd
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => clearHistory.mutate()}
+              disabled={clearHistory.isPending}
+              className="text-red-600 hover:text-red-700"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Clear
+            </Button>
+          </div>
         </div>
       </div>
 
