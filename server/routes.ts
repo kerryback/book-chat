@@ -139,10 +139,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (!source) {
             source = `Document: ${result.document.filename}`;
           }
+          
           return `From ${source}:\n${result.chunk.content}`;
         })
         .join('\n\n---\n\n');
 
+      // Debug: Log what's being sent to GPT
+      console.log('Context being sent to GPT:');
+      console.log(context.substring(0, 500) + '...');
 
 
       const sources = searchResults.map(result => ({
