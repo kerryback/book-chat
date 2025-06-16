@@ -111,7 +111,7 @@ export default function ChatInterface() {
             <Sparkles className="w-5 h-5 text-blue-600" />
             <h1 className="text-xl font-semibold">Chat Assistant</h1>
             <Badge variant="secondary">
-              {documents?.length || 0} documents
+              {Array.isArray(documents) ? documents.length : 0} documents
             </Badge>
           </div>
           <Button
@@ -144,7 +144,7 @@ export default function ChatInterface() {
                       Ask questions about your uploaded documents. I can help analyze content, 
                       explain concepts, and provide insights based on your files.
                     </p>
-                    {documents && documents.length > 0 && (
+                    {Array.isArray(documents) && documents.length > 0 && (
                       <div className="text-sm text-gray-500">
                         Ready to answer questions about {documents.length} document(s)
                       </div>
