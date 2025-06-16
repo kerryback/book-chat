@@ -28,7 +28,6 @@ export default function ChatInterface() {
   // Fetch messages
   const { data: messages = [], isLoading } = useQuery<ChatMessage[]>({
     queryKey: ["/api/chat/messages"],
-    refetchInterval: 2000,
   });
 
   // Fetch documents for context
@@ -39,12 +38,18 @@ export default function ChatInterface() {
   // Send message mutation
   const sendMessage = useMutation({
     mutationFn: async (message: string) => {
+      if (!message.trim()) {
+        throw new Error("Message cannot be empty");
+      }
       const response = await fetch("/api/chat/messages", {
         method: "POST",
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ message: message.trim() }),
         headers: { "Content-Type": "application/json" },
       });
-      if (!response.ok) throw new Error("Failed to send message");
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`Failed to send message: ${errorData}`);
+      }
       return response.json();
     },
     onSuccess: () => {
@@ -52,6 +57,7 @@ export default function ChatInterface() {
       setInput("");
     },
     onError: (error: Error) => {
+      console.error("Chat error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to send message",
