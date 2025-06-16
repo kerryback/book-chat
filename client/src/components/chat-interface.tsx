@@ -170,47 +170,62 @@ export default function ChatInterface() {
         )}
 
         {/* Chat Messages */}
-        {messages.map((message) => (
-          <div key={message.id} className="max-w-3xl mx-auto">
-            {message.role === "user" ? (
-              <div className="flex justify-end">
-                <div className="max-w-xs lg:max-w-md px-4 py-3 bg-primary text-primary-foreground rounded-lg">
-                  <p className="text-sm">{message.content}</p>
-                </div>
-              </div>
-            ) : (
-              <div className="flex">
-                <div className="flex-shrink-0 w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-3">
-                  <Bot className="w-4 h-4 text-gray-600" />
-                </div>
-                <div className="flex-1">
-                  <Card className="shadow-sm">
-                    <CardContent className="p-4">
-                      <div className="prose prose-sm max-w-none">
-                        <p className="whitespace-pre-wrap">{message.content}</p>
-                      </div>
-                      
-                      {/* Sources */}
-                      {message.sources && Array.isArray(message.sources) && message.sources.length > 0 && (
-                        <div className="mt-4 pt-4 border-t border-gray-100">
-                          <p className="text-xs font-medium text-gray-500 mb-2">Sources:</p>
-                          <div className="flex flex-wrap gap-2">
-                            {message.sources.map((source: { filename: string; similarity?: number }, index: number) => (
-                              <Badge key={index} variant="secondary" className="text-xs">
-                                <FileText className="w-3 h-3 mr-1" />
-                                {source.filename}
-                              </Badge>
-                            ))}
+        {messages.length > 0 && (
+          <div className="space-y-6">
+            {messages.map((message) => (
+              <div key={message.id} className="max-w-3xl mx-auto">
+                {message.role === "user" ? (
+                  <div className="flex justify-end mb-4">
+                    <div className="max-w-xs lg:max-w-md px-4 py-3 bg-primary text-primary-foreground rounded-lg">
+                      <p className="text-sm">{message.content}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex mb-4">
+                    <div className="flex-shrink-0 w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-3">
+                      <Bot className="w-4 h-4 text-gray-600" />
+                    </div>
+                    <div className="flex-1">
+                      <Card className="shadow-sm">
+                        <CardContent className="p-4">
+                          <div className="prose prose-sm max-w-none">
+                            <p className="whitespace-pre-wrap text-gray-900">{message.content}</p>
                           </div>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
+                          
+                          {/* Sources */}
+                          {message.sources && Array.isArray(message.sources) && message.sources.length > 0 && (
+                            <div className="mt-4 pt-4 border-t border-gray-100">
+                              <p className="text-xs font-medium text-gray-500 mb-2">Sources:</p>
+                              <div className="flex flex-wrap gap-2">
+                                {message.sources.map((source: { filename: string; similarity?: number }, index: number) => (
+                                  <Badge key={index} variant="secondary" className="text-xs">
+                                    <FileText className="w-3 h-3 mr-1" />
+                                    {source.filename}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
+            ))}
           </div>
-        ))}
+        )}
+
+        {/* Debug info */}
+        {messages.length === 0 && !isLoading && (
+          <div className="max-w-3xl mx-auto">
+            <Card className="bg-gray-50 border-gray-200">
+              <CardContent className="p-4 text-center">
+                <p className="text-sm text-gray-600">No messages yet. Try asking a question about your documents.</p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Loading Message */}
         {sendMessageMutation.isPending && (
