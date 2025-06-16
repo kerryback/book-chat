@@ -74,12 +74,12 @@ export default function FileSidebar() {
     if (!files) return;
 
     Array.from(files).forEach((file) => {
-      if (file.type === "text/markdown" || file.name.endsWith(".md") || file.name.endsWith(".markdown")) {
+      if (file.type === "text/markdown" || file.name.endsWith(".md") || file.name.endsWith(".markdown") || file.name.endsWith(".qmd")) {
         uploadMutation.mutate(file);
       } else {
         toast({
           title: "Invalid file type",
-          description: "Please upload only markdown (.md) files.",
+          description: "Please upload markdown (.md) or Quarto (.qmd) files.",
           variant: "destructive",
         });
       }
@@ -149,14 +149,14 @@ export default function FileSidebar() {
           onClick={() => fileInputRef.current?.click()}
         >
           <Upload className="w-6 h-6 text-gray-400 mx-auto mb-2" />
-          <p className="text-sm text-gray-600 mb-1">Drop markdown files here</p>
+          <p className="text-sm text-gray-600 mb-1">Drop markdown or Quarto files here</p>
           <p className="text-xs text-gray-500">or click to browse</p>
           <input
             ref={fileInputRef}
             type="file"
             className="hidden"
             multiple
-            accept=".md,.markdown,text/markdown"
+            accept=".md,.markdown,.qmd,text/markdown"
             onChange={(e) => handleFileSelect(e.target.files)}
           />
         </div>

@@ -13,10 +13,10 @@ const upload = multer({
   dest: "uploads/",
   fileFilter: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
-    if (ext === '.md' || ext === '.markdown') {
+    if (ext === '.md' || ext === '.markdown' || ext === '.qmd') {
       cb(null, true);
     } else {
-      cb(new Error('Only markdown files are allowed'), false);
+      cb(new Error('Only markdown and Quarto files are allowed'), false);
     }
   },
   limits: {

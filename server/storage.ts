@@ -8,6 +8,8 @@ import {
   type InsertDocument,
   type InsertChatMessage
 } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // Document operations
@@ -30,121 +32,95 @@ export interface IStorage {
   clearChatHistory(): Promise<void>;
 }
 
-export class MemStorage implements IStorage {
-  private documents: Map<number, Document>;
-  private documentChunks: Map<number, DocumentChunk>;
-  private chatMessages: Map<number, ChatMessage>;
-  private currentDocId: number;
-  private currentChunkId: number;
-  private currentMessageId: number;
-
-  constructor() {
-    this.documents = new Map();
-    this.documentChunks = new Map();
-    this.chatMessages = new Map();
-    this.currentDocId = 1;
-    this.currentChunkId = 1;
-    this.currentMessageId = 1;
-  }
-
+export class DatabaseStorage implements IStorage {
   async createDocument(insertDoc: InsertDocument): Promise<Document> {
-    const id = this.currentDocId++;
-    const doc: Document = {
-      ...insertDoc,
-      id,
-      chunkCount: 0,
-      status: "processing",
-      errorMessage: null,
-      createdAt: new Date(),
-    };
-    this.documents.set(id, doc);
-    return doc;
+    const [document] = await db
+      .insert(documents)
+      .values(insertDoc)
+      .returning();
+    return document;
   }
 
   async getDocument(id: number): Promise<Document | undefined> {
-    return this.documents.get(id);
+    const [document] = await db.select().from(documents).where(eq(documents.id, id));
+    return document || undefined;
   }
 
   async getAllDocuments(): Promise<Document[]> {
-    return Array.from(this.documents.values()).sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    return await db.select().from(documents).orderBy(documents.createdAt);
   }
 
   async updateDocumentStatus(id: number, status: string, errorMessage?: string): Promise<void> {
-    const doc = this.documents.get(id);
-    if (doc) {
-      doc.status = status;
-      doc.errorMessage = errorMessage || null;
-      this.documents.set(id, doc);
-    }
+    await db
+      .update(documents)
+      .set({ status, errorMessage })
+      .where(eq(documents.id, id));
   }
 
   async updateDocumentChunkCount(id: number, chunkCount: number): Promise<void> {
-    const doc = this.documents.get(id);
-    if (doc) {
-      doc.chunkCount = chunkCount;
-      this.documents.set(id, doc);
-    }
+    await db
+      .update(documents)
+      .set({ chunkCount })
+      .where(eq(documents.id, id));
   }
 
   async deleteDocument(id: number): Promise<void> {
-    this.documents.delete(id);
     await this.deleteDocumentChunks(id);
+    await db.delete(documents).where(eq(documents.id, id));
   }
 
   async createDocumentChunk(documentId: number, content: string, embedding: number[], chunkIndex: number): Promise<DocumentChunk> {
-    const id = this.currentChunkId++;
-    const chunk: DocumentChunk = {
-      id,
-      documentId,
-      content,
-      embedding: embedding as any,
-      chunkIndex,
-    };
-    this.documentChunks.set(id, chunk);
+    const [chunk] = await db
+      .insert(documentChunks)
+      .values({
+        documentId,
+        content,
+        embedding: embedding as any,
+        chunkIndex,
+      })
+      .returning();
     return chunk;
   }
 
   async getDocumentChunks(documentId: number): Promise<DocumentChunk[]> {
-    return Array.from(this.documentChunks.values())
-      .filter(chunk => chunk.documentId === documentId)
-      .sort((a, b) => a.chunkIndex - b.chunkIndex);
+    return await db
+      .select()
+      .from(documentChunks)
+      .where(eq(documentChunks.documentId, documentId))
+      .orderBy(documentChunks.chunkIndex);
   }
 
   async getAllChunks(): Promise<DocumentChunk[]> {
-    return Array.from(this.documentChunks.values());
+    return await db.select().from(documentChunks);
   }
 
   async deleteDocumentChunks(documentId: number): Promise<void> {
-    const toDelete = Array.from(this.documentChunks.entries())
-      .filter(([_, chunk]) => chunk.documentId === documentId)
-      .map(([id, _]) => id);
-    
-    toDelete.forEach(id => this.documentChunks.delete(id));
+    await db.delete(documentChunks).where(eq(documentChunks.documentId, documentId));
   }
 
   async createChatMessage(message: InsertChatMessage & { sources?: any }): Promise<ChatMessage> {
-    const id = this.currentMessageId++;
-    const chatMessage: ChatMessage = {
-      ...message,
-      id,
-      sources: message.sources || null,
-      createdAt: new Date(),
-    };
-    this.chatMessages.set(id, chatMessage);
+    const [chatMessage] = await db
+      .insert(chatMessages)
+      .values({
+        content: message.content,
+        role: message.role,
+        sources: message.sources || null,
+      })
+      .returning();
     return chatMessage;
   }
 
   async getChatMessages(limit: number = 50): Promise<ChatMessage[]> {
-    return Array.from(this.chatMessages.values())
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-      .slice(-limit);
+    return await db
+      .select()
+      .from(chatMessages)
+      .orderBy(chatMessages.createdAt)
+      .limit(limit);
   }
 
   async clearChatHistory(): Promise<void> {
-    this.chatMessages.clear();
+    await db.delete(chatMessages);
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
