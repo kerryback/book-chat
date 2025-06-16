@@ -31,7 +31,7 @@ export default function ChatInterface() {
     queryKey: ["/api/chat/messages"],
   });
 
-  const { data: documents = [] } = useQuery({
+  const { data: documents = [] } = useQuery<Document[]>({
     queryKey: ["/api/documents"],
   });
 
@@ -94,7 +94,7 @@ export default function ChatInterface() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const completedDocuments = documents.filter((doc: any) => doc.status === "completed");
+  const completedDocuments = documents.filter((doc) => doc.status === "completed");
   const hasDocuments = completedDocuments.length > 0;
 
   const suggestedQueries = [
@@ -195,7 +195,7 @@ export default function ChatInterface() {
                         <div className="mt-4 pt-4 border-t border-gray-100">
                           <p className="text-xs font-medium text-gray-500 mb-2">Sources:</p>
                           <div className="flex flex-wrap gap-2">
-                            {message.sources.map((source: any, index: number) => (
+                            {message.sources.map((source: { filename: string; similarity?: number }, index: number) => (
                               <Badge key={index} variant="secondary" className="text-xs">
                                 <FileText className="w-3 h-3 mr-1" />
                                 {source.filename}
