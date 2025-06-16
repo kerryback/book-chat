@@ -18,10 +18,12 @@ export interface IStorage {
   getAllDocuments(): Promise<Document[]>;
   updateDocumentStatus(id: number, status: string, errorMessage?: string): Promise<void>;
   updateDocumentChunkCount(id: number, chunkCount: number): Promise<void>;
+  updateDocumentChapterTitle(id: number, chapterTitle: string): Promise<void>;
   deleteDocument(id: number): Promise<void>;
   
   // Document chunk operations
   createDocumentChunk(documentId: number, content: string, embedding: number[], chunkIndex: number): Promise<DocumentChunk>;
+  createDocumentChunkWithMetadata(documentId: number, content: string, embedding: number[], chunkIndex: number, sectionTitle?: string): Promise<DocumentChunk>;
   getDocumentChunks(documentId: number): Promise<DocumentChunk[]>;
   getAllChunks(): Promise<DocumentChunk[]>;
   deleteDocumentChunks(documentId: number): Promise<void>;
@@ -61,6 +63,13 @@ export class DatabaseStorage implements IStorage {
     await db
       .update(documents)
       .set({ chunkCount })
+      .where(eq(documents.id, id));
+  }
+
+  async updateDocumentChapterTitle(id: number, chapterTitle: string): Promise<void> {
+    await db
+      .update(documents)
+      .set({ chapterTitle })
       .where(eq(documents.id, id));
   }
 

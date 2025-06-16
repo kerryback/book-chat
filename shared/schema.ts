@@ -10,6 +10,7 @@ export const documents = pgTable("documents", {
   chunkCount: integer("chunk_count").notNull().default(0),
   status: text("status").notNull().default("processing"), // processing, completed, error
   errorMessage: text("error_message"),
+  chapterTitle: text("chapter_title"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -19,6 +20,7 @@ export const documentChunks = pgTable("document_chunks", {
   content: text("content").notNull(),
   embedding: jsonb("embedding"), // Store as JSON array
   chunkIndex: integer("chunk_index").notNull(),
+  sectionTitle: text("section_title"),
 });
 
 export const chatMessages = pgTable("chat_messages", {

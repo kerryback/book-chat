@@ -5,9 +5,43 @@ import type { Document, DocumentChunk } from "@shared/schema";
 const CHUNK_SIZE = 1000; // Characters per chunk
 const CHUNK_OVERLAP = 200; // Overlap between chunks
 
-export function chunkText(text: string): string[] {
-  const chunks: string[] = [];
+export interface ChunkWithMetadata {
+  content: string;
+  sectionTitle?: string;
+}
+
+export function extractChapterTitle(content: string): string | null {
+  // Look for YAML frontmatter title or first # heading
+  const yamlMatch = content.match(/^---\s*\n.*?title:\s*["']?([^"'\n]+)["']?\s*\n.*?---/s);
+  if (yamlMatch) {
+    return yamlMatch[1].trim();
+  }
+
+  // Look for first # heading (chapter title)
+  const h1Match = content.match(/^#\s+(.+)$/m);
+  if (h1Match) {
+    return h1Match[1].trim();
+  }
+
+  return null;
+}
+
+export function chunkTextWithMetadata(text: string): ChunkWithMetadata[] {
+  const chunks: ChunkWithMetadata[] = [];
   let start = 0;
+  
+  // Extract all section headings (## and ###) with their positions
+  const sectionHeadings: { position: number; title: string; level: number }[] = [];
+  const headingRegex = /^(#{2,})\s+(.+)$/gm;
+  let match;
+  
+  while ((match = headingRegex.exec(text)) !== null) {
+    sectionHeadings.push({
+      position: match.index,
+      title: match[2].trim(),
+      level: match[1].length
+    });
+  }
 
   while (start < text.length) {
     let end = start + CHUNK_SIZE;
@@ -23,22 +57,44 @@ export function chunkText(text: string): string[] {
       }
     }
 
-    chunks.push(text.slice(start, end).trim());
+    const chunkContent = text.slice(start, end).trim();
+    if (chunkContent.length > 0) {
+      // Find the most recent section heading before this chunk
+      let sectionTitle: string | undefined;
+      for (let i = sectionHeadings.length - 1; i >= 0; i--) {
+        if (sectionHeadings[i].position <= start) {
+          sectionTitle = sectionHeadings[i].title;
+          break;
+        }
+      }
+
+      chunks.push({
+        content: chunkContent,
+        sectionTitle
+      });
+    }
+    
     start = end - CHUNK_OVERLAP;
   }
 
-  return chunks.filter(chunk => chunk.length > 0);
+  return chunks;
 }
 
 export async function processDocument(document: Document): Promise<void> {
   try {
     console.log(`Processing document: ${document.filename}`);
     
+    // Extract chapter title and update document
+    const chapterTitle = extractChapterTitle(document.content);
+    if (chapterTitle) {
+      await storage.updateDocumentChapterTitle(document.id, chapterTitle);
+    }
+    
     // Clear any existing chunks for this document
     await storage.deleteDocumentChunks(document.id);
     
-    // Chunk the document content
-    const chunks = chunkText(document.content);
+    // Chunk the document content with metadata
+    const chunks = chunkTextWithMetadata(document.content);
     console.log(`Created ${chunks.length} chunks for ${document.filename}`);
     
     // Process each chunk
@@ -47,8 +103,14 @@ export async function processDocument(document: Document): Promise<void> {
       console.log(`Processing chunk ${i + 1}/${chunks.length} for ${document.filename}`);
       
       try {
-        const embedding = await createEmbedding(chunk);
-        await storage.createDocumentChunk(document.id, chunk, embedding, i);
+        const embedding = await createEmbedding(chunk.content);
+        await storage.createDocumentChunkWithMetadata(
+          document.id, 
+          chunk.content, 
+          embedding, 
+          i, 
+          chunk.sectionTitle
+        );
       } catch (error) {
         console.error(`Failed to process chunk ${i + 1} for ${document.filename}:`, error);
         throw error;
