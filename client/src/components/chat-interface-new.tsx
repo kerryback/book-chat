@@ -119,7 +119,6 @@ export default function ChatInterface() {
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             <Sparkles className="w-5 h-5 text-blue-600" />
-            <h1 className="text-xl font-semibold">Chat about <em>Pricing and Hedging Derivative Securities</em> with OpenAI GPT-4o</h1>
           </div>
           <Button
             variant="outline"
@@ -144,17 +143,11 @@ export default function ChatInterface() {
                 <div className="text-center">
                   <Bot className="w-12 h-12 text-blue-600 mx-auto mb-4" />
                   <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                    Welcome to Your Document Assistant
+                    Chat about <a href="https://book.derivative-securities.org/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline"><em>Pricing and Hedging Derivative Securities</em></a> with OpenAI GPT-4o.
                   </h2>
-                  <p className="text-gray-600 mb-4">
-                    Ask questions about your uploaded documents. I can help analyze content, 
-                    explain concepts, and provide insights based on your files.
+                  <p className="text-gray-600">
+                    Courtesy of the authors: Kerry Back, Hong Liu, and Mark Loewenstein.
                   </p>
-                  {Array.isArray(documents) && documents.length > 0 && (
-                    <div className="text-sm text-gray-500">
-                      Ready to answer questions about {documents.length} document(s)
-                    </div>
-                  )}
                 </div>
               </CardContent>
             </Card>
