@@ -90,15 +90,19 @@ export default function ChatInterface() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (input.trim() && !sendMessage.isPending) {
-      sendMessage.mutate(input.trim());
+    const trimmedInput = input.trim();
+    if (trimmedInput && !sendMessage.isPending) {
+      sendMessage.mutate(trimmedInput);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey && !isComposing) {
       e.preventDefault();
-      handleSubmit(e);
+      const trimmedInput = input.trim();
+      if (trimmedInput && !sendMessage.isPending) {
+        sendMessage.mutate(trimmedInput);
+      }
     }
   };
 
