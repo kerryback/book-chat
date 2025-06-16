@@ -136,9 +136,19 @@ export default function ChatInterface() {
                   Welcome to your RAG Assistant!
                 </h3>
                 <p className="text-blue-700 mb-4">
-                  I can help you find information from your uploaded markdown documents.
+                  I can help you find information from your uploaded markdown and Quarto documents.
                   {!hasDocuments && " Upload some documents first to get started."}
                 </p>
+                {!hasDocuments && (
+                  <div className="mt-4 p-4 bg-white rounded-lg border border-blue-200">
+                    <p className="text-sm text-gray-600 mb-2">
+                      📱 On mobile: Tap the menu button (☰) in the top-left corner to access the upload area
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      💻 On desktop: Use the upload area in the left sidebar
+                    </p>
+                  </div>
+                )}
                 {hasDocuments && (
                   <div className="flex flex-wrap justify-center gap-2">
                     {suggestedQueries.map((query, index) => (
