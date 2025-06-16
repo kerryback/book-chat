@@ -12,7 +12,7 @@ export interface ChunkWithMetadata {
 
 export function extractChapterTitle(content: string): string | null {
   // Look for YAML frontmatter title or first # heading
-  const yamlMatch = content.match(/^---\s*\n.*?title:\s*["']?([^"'\n]+)["']?\s*\n.*?---/s);
+  const yamlMatch = content.match(/^---[\s\S]*?title:\s*["']?([^"'\n]+)["']?[\s\S]*?---/m);
   if (yamlMatch) {
     return yamlMatch[1].trim();
   }

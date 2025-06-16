@@ -91,6 +91,20 @@ export class DatabaseStorage implements IStorage {
     return chunk;
   }
 
+  async createDocumentChunkWithMetadata(documentId: number, content: string, embedding: number[], chunkIndex: number, sectionTitle?: string): Promise<DocumentChunk> {
+    const [chunk] = await db
+      .insert(documentChunks)
+      .values({
+        documentId,
+        content,
+        embedding: embedding as any,
+        chunkIndex,
+        sectionTitle,
+      })
+      .returning();
+    return chunk;
+  }
+
   async getDocumentChunks(documentId: number): Promise<DocumentChunk[]> {
     return await db
       .select()

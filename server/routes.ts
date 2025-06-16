@@ -125,13 +125,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json({ userMessage, assistantMessage: noDocsResponse });
       }
 
-      // Prepare context from search results
+      // Prepare context from search results with chapter/section metadata
       const context = searchResults
-        .map(result => `From ${result.document.filename}:\n${result.chunk.content}`)
+        .map((result, index) => {
+          let source = `Source ${index + 1} (similarity: ${result.similarity.toFixed(3)})`;
+          if (result.document.chapterTitle) {
+            source += `\nChapter: "${result.document.chapterTitle}"`;
+          }
+          if (result.chunk.sectionTitle) {
+            source += `\nSection: "${result.chunk.sectionTitle}"`;
+          }
+          return `${source}:\n${result.chunk.content}`;
+        })
         .join('\n\n---\n\n');
 
       const sources = searchResults.map(result => ({
         filename: result.document.filename,
+        chapterTitle: result.document.chapterTitle,
+        sectionTitle: result.chunk.sectionTitle,
         similarity: result.similarity,
       }));
 
@@ -140,7 +151,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         messages: [
           {
             role: "system",
-            content: `You are a helpful assistant that answers questions based on the provided markdown documents. Use the context below to answer the user's question. If the context doesn't contain relevant information, say so clearly.
+            content: `You are a helpful assistant that answers questions based on the provided markdown documents about "Pricing and Hedging Derivative Securities". Use the context below to answer the user's question. 
+
+When referencing information from the sources, please mention the specific chapter and section titles when available. For example: "As discussed in Chapter 5, Section 'Black-Scholes Model'..." or "According to the 'Option Pricing' section..."
+
+If the context doesn't contain relevant information, say so clearly.
 
 Context from documents:
 ${context}`

@@ -1,0 +1,65 @@
+---
+title: "Black-Scholes Option Pricing Model"
+author: "Kerry Back, Hong Liu, Mark Loewenstein"
+date: "2024"
+---
+
+# Black-Scholes Option Pricing Model
+
+The Black-Scholes model is a fundamental framework for pricing European options on non-dividend-paying stocks.
+
+## Model Assumptions
+
+The Black-Scholes model makes several key assumptions:
+
+1. The stock price follows a geometric Brownian motion with constant drift and volatility
+2. The risk-free interest rate is constant and known
+3. There are no dividends during the option's life
+4. Markets are efficient (no transaction costs, taxes, or bid-ask spreads)
+5. The option is European-style and can only be exercised at expiration
+
+## The Black-Scholes Formula
+
+For a European call option, the Black-Scholes formula is:
+
+$$C = S_0 N(d_1) - K e^{-rT} N(d_2)$$
+
+where:
+
+- $C$ = Call option price
+- $S_0$ = Current stock price
+- $K$ = Strike price
+- $r$ = Risk-free interest rate
+- $T$ = Time to expiration
+- $N(x)$ = Cumulative standard normal distribution function
+
+The parameters $d_1$ and $d_2$ are defined as:
+
+$$d_1 = \frac{\ln(S_0/K) + (r + \sigma^2/2)T}{\sigma\sqrt{T}}$$
+
+$$d_2 = d_1 - \sigma\sqrt{T}$$
+
+## Put-Call Parity
+
+Put-call parity establishes a relationship between the prices of European put and call options:
+
+$$C - P = S_0 - K e^{-rT}$$
+
+This relationship ensures no arbitrage opportunities exist between puts, calls, the underlying stock, and risk-free bonds.
+
+## Greeks and Risk Management
+
+The Greeks measure the sensitivity of option prices to various factors:
+
+### Delta
+Delta ($\Delta$) measures the rate of change of the option price with respect to changes in the underlying asset's price:
+
+$$\Delta_{call} = N(d_1)$$
+$$\Delta_{put} = N(d_1) - 1$$
+
+### Gamma
+Gamma ($\Gamma$) measures the rate of change of delta with respect to changes in the underlying price:
+
+$$\Gamma = \frac{n(d_1)}{S_0 \sigma \sqrt{T}}$$
+
+where $n(x)$ is the standard normal probability density function.
