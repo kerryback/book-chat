@@ -139,6 +139,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
         .join('\n\n---\n\n');
 
+      // Debug logging to see what metadata is available
+      console.log('Search results metadata:');
+      searchResults.forEach((result, index) => {
+        console.log(`Result ${index + 1}:`, {
+          chapterTitle: result.document.chapterTitle,
+          sectionTitle: result.chunk.sectionTitle,
+          filename: result.document.filename
+        });
+      });
+
       const sources = searchResults.map(result => ({
         filename: result.document.filename,
         chapterTitle: result.document.chapterTitle,
