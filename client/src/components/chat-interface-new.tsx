@@ -119,10 +119,7 @@ export default function ChatInterface() {
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             <Sparkles className="w-5 h-5 text-blue-600" />
-            <h1 className="text-xl font-semibold">Chat about <em>Pricing and Hedging Derivative Securities</em> with OpenAI gpt-4o</h1>
-            <Badge variant="secondary">
-              {Array.isArray(documents) ? documents.length : 0} documents
-            </Badge>
+            <h1 className="text-xl font-semibold">Chat about <em>Pricing and Hedging Derivative Securities</em> with OpenAI GPT-4o</h1>
           </div>
           <Button
             variant="outline"
