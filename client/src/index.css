@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Prevent body/html scrolling - only chat area should scroll */
+html, body {
+  overflow: hidden;
+  height: 100%;
+}
+
+#root {
+  height: 100vh;
+  overflow: hidden;
+}
+
 :root {
   --background: hsl(0, 0%, 100%);
   --foreground: hsl(20, 14.3%, 4.1%);

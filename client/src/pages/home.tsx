@@ -6,7 +6,7 @@ import { Menu } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="h-screen bg-gray-50">
+    <div className="h-screen bg-gray-50 overflow-hidden">
       <ChatInterface />
     </div>
   );
