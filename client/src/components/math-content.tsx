@@ -137,8 +137,8 @@ export function MathContent({ content }: MathContentProps) {
   };
 
   return (
-    <div className="prose prose-sm max-w-none">
-      <div className="whitespace-pre-wrap text-gray-900">
+    <div className="prose prose-sm max-w-none overflow-visible">
+      <div className="whitespace-pre-wrap text-gray-900 overflow-visible">
         {renderContent(content)}
       </div>
     </div>

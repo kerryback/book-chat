@@ -212,8 +212,10 @@ export default function ChatInterface() {
                       <span className="text-sm text-gray-500">Assistant</span>
                     </div>
                     <Card>
-                      <CardContent className="p-4">
-                        <MathContent content={message.content} />
+                      <CardContent className="p-4 overflow-visible">
+                        <div className="overflow-visible">
+                          <MathContent content={message.content} />
+                        </div>
                       </CardContent>
                     </Card>
                   </div>
