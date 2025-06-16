@@ -113,13 +113,13 @@ export default function ChatInterface() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-50">
+    <div className="h-full flex flex-col bg-gray-50">
       {/* Header */}
       <div className="flex-shrink-0 bg-white border-b px-6 py-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             <Sparkles className="w-5 h-5 text-blue-600" />
-            <h1 className="text-xl font-semibold">Chat Assistant</h1>
+            <h1 className="text-xl font-semibold">Chat about <em>Pricing and Hedging Derivative Securities</em> with OpenAI gpt-4o</h1>
             <Badge variant="secondary">
               {Array.isArray(documents) ? documents.length : 0} documents
             </Badge>
@@ -138,108 +138,89 @@ export default function ChatInterface() {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full overflow-y-auto px-6 py-4">
-          <div className="max-w-4xl mx-auto space-y-6">
-            {/* Welcome message */}
-            {messages.length === 0 && !isLoading && (
-              <Card className="bg-blue-50 border-blue-200">
-                <CardContent className="p-6">
-                  <div className="text-center">
-                    <Bot className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-                    <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                      Welcome to Your Document Assistant
-                    </h2>
-                    <p className="text-gray-600 mb-4">
-                      Ask questions about your uploaded documents. I can help analyze content, 
-                      explain concepts, and provide insights based on your files.
-                    </p>
-                    {Array.isArray(documents) && documents.length > 0 && (
-                      <div className="text-sm text-gray-500">
-                        Ready to answer questions about {documents.length} document(s)
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Chat messages */}
-            {messages.map((message) => (
-              <div key={message.id}>
-                {message.role === "user" ? (
-                  <div className="flex justify-end">
-                    <div className="max-w-2xl">
-                      <div className="flex items-center gap-2 mb-2 justify-end">
-                        <span className="text-sm text-gray-500">You</span>
-                        <User className="w-4 h-4 text-gray-500" />
-                      </div>
-                      <Card className="bg-blue-600 text-white">
-                        <CardContent className="p-4">
-                          <p className="whitespace-pre-wrap">{message.content}</p>
-                        </CardContent>
-                      </Card>
+      <div className="flex-1 overflow-y-auto px-6 py-4">
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* Welcome message */}
+          {messages.length === 0 && !isLoading && (
+            <Card className="bg-blue-50 border-blue-200">
+              <CardContent className="p-6">
+                <div className="text-center">
+                  <Bot className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+                  <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                    Welcome to Your Document Assistant
+                  </h2>
+                  <p className="text-gray-600 mb-4">
+                    Ask questions about your uploaded documents. I can help analyze content, 
+                    explain concepts, and provide insights based on your files.
+                  </p>
+                  {Array.isArray(documents) && documents.length > 0 && (
+                    <div className="text-sm text-gray-500">
+                      Ready to answer questions about {documents.length} document(s)
                     </div>
-                  </div>
-                ) : (
-                  <div className="flex justify-start">
-                    <div className="max-w-3xl w-full">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Bot className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm text-gray-500">Assistant</span>
-                      </div>
-                      <Card>
-                        <CardContent className="p-4">
-                          <MathContent content={message.content} />
-                          
-                          {/* Sources */}
-                          {message.sources && Array.isArray(message.sources) && message.sources.length > 0 && (
-                            <div className="mt-4 pt-4 border-t">
-                              <div className="flex items-center gap-2 mb-2">
-                                <FileText className="w-4 h-4 text-gray-500" />
-                                <span className="text-sm font-medium text-gray-700">Sources</span>
-                              </div>
-                              <div className="flex flex-wrap gap-2">
-                                {message.sources.map((source: any, index: number) => (
-                                  <Badge key={index} variant="secondary" className="text-xs">
-                                    {source.document?.filename || source.filename || 'Document'}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {/* Loading indicator */}
-            {sendMessage.isPending && (
-              <div className="flex justify-start">
-                <div className="max-w-3xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Bot className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm text-gray-500">Assistant</span>
-                  </div>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                        <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                        <span className="text-sm text-gray-500 ml-2">Thinking...</span>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  )}
                 </div>
-              </div>
-            )}
+              </CardContent>
+            </Card>
+          )}
 
-            <div ref={messagesEndRef} />
-          </div>
+          {/* Chat messages */}
+          {messages.map((message) => (
+            <div key={message.id}>
+              {message.role === "user" ? (
+                <div className="flex justify-end">
+                  <div className="max-w-2xl">
+                    <div className="flex items-center gap-2 mb-2 justify-end">
+                      <span className="text-sm text-gray-500">You</span>
+                      <User className="w-4 h-4 text-gray-500" />
+                    </div>
+                    <Card className="bg-blue-600 text-white">
+                      <CardContent className="p-4">
+                        <p className="whitespace-pre-wrap">{message.content}</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex justify-start">
+                  <div className="max-w-3xl w-full">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Bot className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm text-gray-500">Assistant</span>
+                    </div>
+                    <Card>
+                      <CardContent className="p-4">
+                        <MathContent content={message.content} />
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+
+          {/* Loading indicator */}
+          {sendMessage.isPending && (
+            <div className="flex justify-start">
+              <div className="max-w-3xl">
+                <div className="flex items-center gap-2 mb-2">
+                  <Bot className="w-4 h-4 text-gray-500" />
+                  <span className="text-sm text-gray-500">Assistant</span>
+                </div>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      <span className="text-sm text-gray-500 ml-2">Thinking...</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
         </div>
       </div>
 
@@ -254,7 +235,7 @@ export default function ChatInterface() {
                 onKeyDown={handleKeyDown}
                 onCompositionStart={() => setIsComposing(true)}
                 onCompositionEnd={() => setIsComposing(false)}
-                placeholder="Ask a question about your documents..."
+                placeholder="Ask a question"
                 className="min-h-[60px] resize-none"
                 disabled={sendMessage.isPending}
               />
