@@ -1,0 +1,177 @@
+import type { Express } from "express";
+import { createServer, type Server } from "http";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import { storage } from "./storage";
+import { processDocument, searchSimilarChunks } from "./services/embeddings";
+import { createChatCompletion } from "./services/openai";
+import { insertDocumentSchema, insertChatMessageSchema } from "@shared/schema";
+
+// Configure multer for file uploads
+const upload = multer({
+  dest: "uploads/",
+  fileFilter: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (ext === '.md' || ext === '.markdown') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only markdown files are allowed'), false);
+    }
+  },
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  }
+});
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  
+  // Get all documents
+  app.get("/api/documents", async (req, res) => {
+    try {
+      const documents = await storage.getAllDocuments();
+      res.json(documents);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Upload document
+  app.post("/api/documents", upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      const content = fs.readFileSync(req.file.path, 'utf-8');
+      
+      const documentData = {
+        filename: req.file.originalname,
+        content,
+        size: req.file.size,
+      };
+
+      const validatedData = insertDocumentSchema.parse(documentData);
+      const document = await storage.createDocument(validatedData);
+
+      // Clean up uploaded file
+      fs.unlinkSync(req.file.path);
+
+      // Process document asynchronously
+      processDocument(document).catch(error => {
+        console.error("Background processing failed:", error);
+      });
+
+      res.status(201).json(document);
+    } catch (error) {
+      // Clean up file if processing failed
+      if (req.file && fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Delete document
+  app.delete("/api/documents/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const document = await storage.getDocument(id);
+      
+      if (!document) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+
+      await storage.deleteDocument(id);
+      res.json({ message: "Document deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Get chat messages
+  app.get("/api/chat/messages", async (req, res) => {
+    try {
+      const messages = await storage.getChatMessages();
+      res.json(messages);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Send chat message and get AI response
+  app.post("/api/chat/messages", async (req, res) => {
+    try {
+      const { content } = insertChatMessageSchema.parse(req.body);
+      
+      // Save user message
+      const userMessage = await storage.createChatMessage({
+        content,
+        role: "user",
+      });
+
+      // Search for relevant chunks
+      const searchResults = await searchSimilarChunks(content, 5);
+      
+      if (searchResults.length === 0) {
+        const noDocsResponse = await storage.createChatMessage({
+          content: "I don't have any documents to search through yet. Please upload some markdown files first.",
+          role: "assistant",
+        });
+        return res.json({ userMessage, assistantMessage: noDocsResponse });
+      }
+
+      // Prepare context from search results
+      const context = searchResults
+        .map(result => `From ${result.document.filename}:\n${result.chunk.content}`)
+        .join('\n\n---\n\n');
+
+      const sources = searchResults.map(result => ({
+        filename: result.document.filename,
+        similarity: result.similarity,
+      }));
+
+      // Generate AI response
+      const aiResponse = await createChatCompletion({
+        messages: [
+          {
+            role: "system",
+            content: `You are a helpful assistant that answers questions based on the provided markdown documents. Use the context below to answer the user's question. If the context doesn't contain relevant information, say so clearly.
+
+Context from documents:
+${context}`
+          },
+          {
+            role: "user",
+            content: content,
+          }
+        ]
+      });
+
+      // Save assistant message with sources
+      const assistantMessage = await storage.createChatMessage({
+        content: aiResponse,
+        role: "assistant",
+        sources,
+      });
+
+      res.json({ userMessage, assistantMessage });
+    } catch (error) {
+      console.error("Chat error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Clear chat history
+  app.delete("/api/chat/messages", async (req, res) => {
+    try {
+      await storage.clearChatHistory();
+      res.json({ message: "Chat history cleared" });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
+}
