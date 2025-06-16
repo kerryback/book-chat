@@ -167,7 +167,7 @@ ${context}`
   });
 
   // Clear chat history
-  app.delete("/api/chat/messages", async (req, res) => {
+  app.delete("/api/chat/clear", async (req, res) => {
     try {
       await storage.clearChatHistory();
       res.json({ message: "Chat history cleared" });
