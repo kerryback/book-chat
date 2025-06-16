@@ -128,14 +128,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Prepare context from search results with chapter/section metadata
       const context = searchResults
         .map((result, index) => {
-          let source = `Source ${index + 1} (similarity: ${result.similarity.toFixed(3)})`;
+          let source = "";
           if (result.document.chapterTitle) {
-            source += `\nChapter: "${result.document.chapterTitle}"`;
+            source += `Chapter: "${result.document.chapterTitle}"`;
           }
           if (result.chunk.sectionTitle) {
-            source += `\nSection: "${result.chunk.sectionTitle}"`;
+            if (source) source += ", ";
+            source += `Section: "${result.chunk.sectionTitle}"`;
           }
-          return `${source}:\n${result.chunk.content}`;
+          if (!source) {
+            source = `Document: ${result.document.filename}`;
+          }
+          return `From ${source}:\n${result.chunk.content}`;
         })
         .join('\n\n---\n\n');
 
