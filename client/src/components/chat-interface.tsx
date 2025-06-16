@@ -17,6 +17,8 @@ import {
   CheckCircle,
   Sparkles,
 } from "lucide-react";
+import "katex/dist/katex.min.css";
+import { MathContent } from "@/components/math-content";
 import type { ChatMessage } from "@shared/schema";
 
 export default function ChatInterface() {
@@ -188,9 +190,7 @@ export default function ChatInterface() {
                     <div className="flex-1">
                       <Card className="shadow-sm">
                         <CardContent className="p-4">
-                          <div className="prose prose-sm max-w-none">
-                            <p className="whitespace-pre-wrap text-gray-900">{message.content}</p>
-                          </div>
+                          <MathContent content={message.content} />
                           
                           {/* Sources */}
                           {message.sources && Array.isArray(message.sources) && message.sources.length > 0 && (
