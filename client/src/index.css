@@ -2,9 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Prevent body/html scrolling - only chat area should scroll */
+/* Ensure proper layout without duplicate scrolling */
 html, body {
-  overflow: hidden;
   height: 100%;
   margin: 0;
   padding: 0;
@@ -12,7 +11,6 @@ html, body {
 
 #root {
   height: 100vh;
-  overflow: hidden;
 }
 
 :root {

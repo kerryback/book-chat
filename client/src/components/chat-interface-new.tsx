@@ -168,7 +168,7 @@ export default function ChatInterface() {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-scroll px-6 py-4">
+      <div className="flex-1 overflow-y-auto px-6 py-4" style={{ minHeight: 0 }}>
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Welcome message */}
           {messages.length === 0 && !isLoading && (
