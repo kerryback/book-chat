@@ -127,7 +127,7 @@ export default function ChatInterface() {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
+      <div className="flex-1 overflow-y-auto p-6 scroll-area" style={{ maxHeight: 'calc(100vh - 240px)' }}>
         {/* Welcome Message */}
         {messages.length === 0 && (
           <div className="max-w-3xl mx-auto">
