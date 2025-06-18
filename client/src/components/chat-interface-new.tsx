@@ -155,19 +155,19 @@ export default function ChatInterface() {
       formData.append("file", file);
       
       const response = await apiRequest("POST", "/api/documents", formData);
-      return response.json();
+      return { data: response.json(), filename: file.name };
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
       toast({
-        title: "Success",
-        description: "File uploaded and processed successfully",
+        title: "Upload successful",
+        description: `${result.filename} uploaded and being processed`,
       });
     },
-    onError: (error: Error) => {
+    onError: (error: Error, file: File) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to upload file",
+        title: "Upload failed",
+        description: `${file.name}: ${error.message || "Failed to upload"}`,
         variant: "destructive",
       });
     },
