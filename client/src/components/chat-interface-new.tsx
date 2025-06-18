@@ -74,6 +74,21 @@ export default function ChatInterface() {
     queryKey: ["/api/chat/messages"],
   });
 
+  // Clear chat history on component mount to ensure fresh sessions
+  useEffect(() => {
+    const clearOnLoad = async () => {
+      try {
+        await apiRequest("/api/chat/clear", {
+          method: "DELETE",
+        });
+        queryClient.invalidateQueries({ queryKey: ["/api/chat/messages"] });
+      } catch (error) {
+        // Silently handle errors on initial clear
+      }
+    };
+    clearOnLoad();
+  }, [queryClient]);
+
   // Fetch documents for context
   const { data: documents = [] } = useQuery({
     queryKey: ["/api/documents"],
@@ -214,7 +229,7 @@ export default function ChatInterface() {
               className="text-blue-600 hover:text-blue-700"
             >
               <Upload className="w-4 h-4 mr-2" />
-              {uploadFile.isPending ? "Uploading..." : "Upload"}
+              {uploadFile.isPending ? "Uploading..." : "Upload (authors only)"}
             </Button>
             <Button
               variant="outline"
