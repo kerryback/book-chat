@@ -17,15 +17,39 @@ import {
 } from "lucide-react";
 import "katex/dist/katex.min.css";
 import { MathContent } from "@/components/math-content";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import type { ChatMessage } from "@shared/schema";
 
 export default function ChatInterface() {
   const [input, setInput] = useState("");
   const [isComposing, setIsComposing] = useState(false);
+  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
+  const [password, setPassword] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleUploadClick = () => {
+    setShowPasswordPrompt(true);
+    setPassword("");
+  };
+
+  const handlePasswordSubmit = () => {
+    if (password === "upload123") {
+      setShowPasswordPrompt(false);
+      setPassword("");
+      fileInputRef.current?.click();
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Access denied",
+        description: "Invalid password",
+      });
+      setPassword("");
+    }
+  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -185,7 +209,7 @@ export default function ChatInterface() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => fileInputRef.current?.click()}
+              onClick={handleUploadClick}
               disabled={uploadFile.isPending}
               className="text-blue-600 hover:text-blue-700"
             >
@@ -321,6 +345,43 @@ export default function ChatInterface() {
           </div>
         </form>
       </div>
+
+      {/* Password Protection Dialog */}
+      <Dialog open={showPasswordPrompt} onOpenChange={setShowPasswordPrompt}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Upload Authentication</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <Input
+              type="password"
+              placeholder="Enter password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handlePasswordSubmit();
+                }
+              }}
+              className="w-full"
+            />
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowPasswordPrompt(false);
+                  setPassword("");
+                }}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handlePasswordSubmit}>
+                Submit
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
