@@ -52,12 +52,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const validatedData = insertDocumentSchema.parse(documentData);
+      
+      // Check if document with same filename already exists
+      const existingDocuments = await storage.getAllDocuments();
+      const existingDoc = existingDocuments.find(doc => doc.filename === validatedData.filename);
+      
+      if (existingDoc) {
+        // Delete existing document and its chunks
+        await storage.deleteDocument(existingDoc.id);
+        console.log(`Replaced existing document: ${validatedData.filename}`);
+      }
+      
       const document = await storage.createDocument(validatedData);
 
       // Clean up uploaded file
       fs.unlinkSync(req.file.path);
 
-      // Process document asynchronously
+      // Process document asynchronously with chapter/section extraction
       processDocument(document).catch(error => {
         console.error("Background processing failed:", error);
       });
