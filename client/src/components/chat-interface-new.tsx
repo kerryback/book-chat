@@ -152,16 +152,7 @@ export default function ChatInterface() {
       const formData = new FormData();
       formData.append("file", file);
       
-      const response = await fetch("/api/documents/upload", {
-        method: "POST",
-        body: formData,
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.text();
-        throw new Error(`Upload failed: ${errorData}`);
-      }
-      
+      const response = await apiRequest("POST", "/api/documents", formData);
       return response.json();
     },
     onSuccess: () => {
