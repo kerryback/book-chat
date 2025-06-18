@@ -78,9 +78,7 @@ export default function ChatInterface() {
   useEffect(() => {
     const clearOnLoad = async () => {
       try {
-        await apiRequest("/api/chat/clear", {
-          method: "DELETE",
-        });
+        await apiRequest("DELETE", "/api/chat/clear");
         queryClient.invalidateQueries({ queryKey: ["/api/chat/messages"] });
       } catch (error) {
         // Silently handle errors on initial clear
