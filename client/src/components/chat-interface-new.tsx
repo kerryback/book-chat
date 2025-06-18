@@ -13,6 +13,7 @@ import {
   FileText,
   Trash2,
   Sparkles,
+  Upload,
 } from "lucide-react";
 import "katex/dist/katex.min.css";
 import { MathContent } from "@/components/math-content";
@@ -24,6 +25,25 @@ export default function ChatInterface() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (!file.name.endsWith('.qmd')) {
+        toast({
+          variant: "destructive",
+          title: "Invalid file type",
+          description: "Please upload a .qmd file",
+        });
+        return;
+      }
+      uploadFile.mutate(file);
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   // Fetch messages
   const { data: messages = [], isLoading } = useQuery<ChatMessage[]>({
@@ -154,16 +174,35 @@ export default function ChatInterface() {
           <div className="flex items-center gap-3">
             <Sparkles className="w-5 h-5 text-blue-600" />
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => clearHistory.mutate()}
-            disabled={clearHistory.isPending}
-            className="text-red-600 hover:text-red-700"
-          >
-            <Trash2 className="w-4 h-4 mr-2" />
-            Clear
-          </Button>
+          <div className="flex items-center gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".qmd"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadFile.isPending}
+              className="text-blue-600 hover:text-blue-700"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              {uploadFile.isPending ? "Uploading..." : "Upload"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => clearHistory.mutate()}
+              disabled={clearHistory.isPending}
+              className="text-red-600 hover:text-red-700"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Clear
+            </Button>
+          </div>
         </div>
       </div>
 
