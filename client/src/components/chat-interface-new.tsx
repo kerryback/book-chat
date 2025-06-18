@@ -52,17 +52,19 @@ export default function ChatInterface() {
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (!file.name.endsWith('.qmd')) {
-        toast({
-          variant: "destructive",
-          title: "Invalid file type",
-          description: "Please upload a .qmd file",
-        });
-        return;
-      }
-      uploadFile.mutate(file);
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      Array.from(files).forEach((file) => {
+        if (!file.name.endsWith('.qmd')) {
+          toast({
+            variant: "destructive",
+            title: "Invalid file type",
+            description: `${file.name} is not a .qmd file`,
+          });
+          return;
+        }
+        uploadFile.mutate(file);
+      });
     }
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -207,6 +209,7 @@ export default function ChatInterface() {
               ref={fileInputRef}
               type="file"
               accept=".qmd"
+              multiple
               onChange={handleFileUpload}
               className="hidden"
             />
