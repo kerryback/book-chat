@@ -245,7 +245,6 @@ export default function ChatInterface() {
             <Card className="bg-blue-50 border-blue-200">
               <CardContent className="p-6">
                 <div className="text-center">
-                  <Bot className="w-12 h-12 text-blue-600 mx-auto mb-4" />
                   <h2 className="text-xl font-semibold text-gray-900 mb-2">
                     Chat about <a href="https://book.derivative-securities.org/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline"><em>Pricing and Hedging Derivative Securities</em></a> with OpenAI GPT-4o.
                   </h2>
