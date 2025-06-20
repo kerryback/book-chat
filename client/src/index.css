@@ -2,6 +2,47 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Bootswatch Flatly (Light) Theme Variables */
+:root.theme-light {
+  --bs-primary: #18bc9c;
+  --bs-secondary: #95a5a6;
+  --bs-success: #27ae60;
+  --bs-info: #3498db;
+  --bs-warning: #f39c12;
+  --bs-danger: #e74c3c;
+  --bs-light: #ecf0f1;
+  --bs-dark: #2c3e50;
+  --bs-body-bg: #ffffff;
+  --bs-body-color: #2c3e50;
+  --bs-border-color: #dee2e6;
+}
+
+/* Bootswatch Superhero (Dark) Theme Variables */
+:root.theme-dark {
+  --bs-primary: #df691a;
+  --bs-secondary: #95a5a6;
+  --bs-success: #27ae60;
+  --bs-info: #3498db;
+  --bs-warning: #f39c12;
+  --bs-danger: #e74c3c;
+  --bs-light: #4e5d6c;
+  --bs-dark: #2b3e50;
+  --bs-body-bg: #2b3e50;
+  --bs-body-color: #ebebeb;
+  --bs-border-color: #4e5d6c;
+}
+
+/* Apply theme styles */
+.theme-light {
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+}
+
+.theme-dark {
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+}
+
 /* Ensure proper layout without duplicate scrolling */
 html, body {
   height: 100%;

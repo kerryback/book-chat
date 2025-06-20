@@ -19,6 +19,8 @@ import "katex/dist/katex.min.css";
 import { MathContent } from "@/components/math-content";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { useTheme } from "@/hooks/useTheme";
+import { Moon, Sun } from "lucide-react";
 import type { ChatMessage } from "@shared/schema";
 
 export default function ChatInterface() {
@@ -30,6 +32,7 @@ export default function ChatInterface() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { theme, toggleTheme } = useTheme();
 
   const handleUploadClick = () => {
     setShowPasswordPrompt(true);
@@ -213,6 +216,18 @@ export default function ChatInterface() {
               onChange={handleFileUpload}
               className="hidden"
             />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleTheme}
+              className="text-gray-600 hover:text-gray-700"
+            >
+              {theme === "light" ? (
+                <Moon className="w-4 h-4" />
+              ) : (
+                <Sun className="w-4 h-4" />
+              )}
+            </Button>
             <Button
               variant="outline"
               size="sm"
