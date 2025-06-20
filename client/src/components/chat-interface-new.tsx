@@ -338,7 +338,7 @@ export default function ChatInterface() {
       </div>
 
       {/* Input Area */}
-      <div className={`flex-shrink-0 ${theme === 'dark' ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-200'} border-t px-6 py-4`}>
+      <div className="flex-shrink-0 bg-card border-border border-t px-6 py-4">
         <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
           <div className="flex gap-3">
             <div className="flex-1">
@@ -349,7 +349,7 @@ export default function ChatInterface() {
                 onCompositionStart={() => setIsComposing(true)}
                 onCompositionEnd={() => setIsComposing(false)}
                 placeholder="Ask about derivative securities..."
-                className={`min-h-[60px] resize-none ${theme === 'dark' ? 'bg-slate-800 border-slate-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
+                className="min-h-[60px] resize-none bg-background border-input text-foreground placeholder:text-muted-foreground"
                 disabled={sendMessage.isPending}
               />
             </div>
