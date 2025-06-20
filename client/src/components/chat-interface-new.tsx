@@ -205,22 +205,6 @@ export default function ChatInterface() {
       <div className="flex-shrink-0 bg-card border-border border-b px-6 py-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
-          </div>
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={toggleTheme}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              {theme === "light" ? (
-                <Moon className="w-4 h-4" />
-              ) : (
-                <Sun className="w-4 h-4" />
-              )}
-            </Button>
-          </div>
-          <div className="flex items-center gap-2">
             <input
               ref={fileInputRef}
               type="file"
@@ -239,6 +223,22 @@ export default function ChatInterface() {
               <Upload className="w-4 h-4 mr-2" />
               {uploadFile.isPending ? "Uploading..." : "Upload (authors only)"}
             </Button>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleTheme}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              {theme === "light" ? (
+                <Moon className="w-4 h-4" />
+              ) : (
+                <Sun className="w-4 h-4" />
+              )}
+            </Button>
+          </div>
+          <div className="flex items-center gap-2">
             <Button
               variant="secondary"
               size="sm"
