@@ -229,20 +229,21 @@ export default function ChatInterface() {
               )}
             </Button>
             <Button
-              variant="default"
+              variant="secondary"
               size="sm"
               onClick={handleUploadClick}
               disabled={uploadFile.isPending}
-              className="bg-accent hover:bg-accent/90 text-accent-foreground"
+              className="bg-slate-600 hover:bg-slate-700 text-white dark:bg-slate-700 dark:hover:bg-slate-600"
             >
               <Upload className="w-4 h-4 mr-2" />
               {uploadFile.isPending ? "Uploading..." : "Upload (authors only)"}
             </Button>
             <Button
-              variant="destructive"
+              variant="secondary"
               size="sm"
               onClick={() => clearHistory.mutate()}
               disabled={clearHistory.isPending}
+              className="bg-slate-600 hover:bg-slate-700 text-white dark:bg-slate-700 dark:hover:bg-slate-600"
             >
               <Trash2 className="w-4 h-4 mr-2" />
               Clear
