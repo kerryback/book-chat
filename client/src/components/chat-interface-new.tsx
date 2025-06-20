@@ -233,7 +233,7 @@ export default function ChatInterface() {
               size="sm"
               onClick={handleUploadClick}
               disabled={uploadFile.isPending}
-              className="bg-slate-600 hover:bg-slate-700 text-white dark:bg-slate-700 dark:hover:bg-slate-600"
+              className="bg-slate-400 hover:bg-slate-500 text-white dark:bg-slate-500 dark:hover:bg-slate-400"
             >
               <Upload className="w-4 h-4 mr-2" />
               {uploadFile.isPending ? "Uploading..." : "Upload (authors only)"}
@@ -243,7 +243,7 @@ export default function ChatInterface() {
               size="sm"
               onClick={() => clearHistory.mutate()}
               disabled={clearHistory.isPending}
-              className="bg-slate-600 hover:bg-slate-700 text-white dark:bg-slate-700 dark:hover:bg-slate-600"
+              className="bg-slate-400 hover:bg-slate-500 text-white dark:bg-slate-500 dark:hover:bg-slate-400"
             >
               <Trash2 className="w-4 h-4 mr-2" />
               Clear
