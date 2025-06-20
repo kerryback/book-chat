@@ -205,16 +205,6 @@ export default function ChatInterface() {
       <div className="flex-shrink-0 bg-card border-border border-b px-6 py-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
-          </div>
-          <div className="flex items-center gap-2">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".qmd"
-              multiple
-              onChange={handleFileUpload}
-              className="hidden"
-            />
             <Button
               variant="outline"
               size="sm"
@@ -227,6 +217,16 @@ export default function ChatInterface() {
                 <Sun className="w-4 h-4" />
               )}
             </Button>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".qmd"
+              multiple
+              onChange={handleFileUpload}
+              className="hidden"
+            />
             <Button
               variant="secondary"
               size="sm"
