@@ -3,6 +3,7 @@ import { InlineMath, BlockMath } from "react-katex";
 
 interface MathContentProps {
   content: string;
+  className?: string;
 }
 
 interface MathExpression {
@@ -12,7 +13,7 @@ interface MathExpression {
   type: 'block' | 'inline';
 }
 
-export function MathContent({ content }: MathContentProps) {
+export function MathContent({ content, className = "" }: MathContentProps) {
   const renderContent = (text: string) => {
     const parts: JSX.Element[] = [];
     
@@ -137,8 +138,8 @@ export function MathContent({ content }: MathContentProps) {
   };
 
   return (
-    <div className="prose prose-sm max-w-none overflow-visible">
-      <div className="whitespace-pre-wrap text-gray-900 overflow-visible">
+    <div className={`prose prose-sm max-w-none overflow-visible ${className}`}>
+      <div className="whitespace-pre-wrap overflow-visible">
         {renderContent(content)}
       </div>
     </div>

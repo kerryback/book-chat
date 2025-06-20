@@ -297,8 +297,11 @@ export default function ChatInterface() {
                     </div>
                     <Card className={`${theme === 'dark' ? 'bg-slate-700 border-slate-600' : 'bg-white border-gray-200'}`}>
                       <CardContent className="p-4 overflow-visible">
-                        <div className={`overflow-visible ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>
-                          <MathContent content={message.content} />
+                        <div className="overflow-visible">
+                          <MathContent 
+                            content={message.content} 
+                            className={theme === 'dark' ? 'text-gray-100' : 'text-gray-900'} 
+                          />
                         </div>
                       </CardContent>
                     </Card>
