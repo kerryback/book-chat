@@ -205,7 +205,6 @@ export default function ChatInterface() {
       <div className="flex-shrink-0 bg-card border-border border-b px-6 py-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <Sparkles className="w-5 h-5 text-blue-600" />
           </div>
           <div className="flex items-center gap-2">
             <input
