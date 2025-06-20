@@ -205,6 +205,8 @@ export default function ChatInterface() {
       <div className="flex-shrink-0 bg-card border-border border-b px-6 py-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
+          </div>
+          <div className="flex items-center gap-3">
             <Button
               variant="outline"
               size="sm"
@@ -232,7 +234,7 @@ export default function ChatInterface() {
               size="sm"
               onClick={handleUploadClick}
               disabled={uploadFile.isPending}
-              className="bg-slate-400 hover:bg-slate-500 text-white dark:bg-slate-500 dark:hover:bg-slate-400"
+              className="bg-slate-500 hover:bg-slate-600 text-white dark:bg-slate-600 dark:hover:bg-slate-500"
             >
               <Upload className="w-4 h-4 mr-2" />
               {uploadFile.isPending ? "Uploading..." : "Upload (authors only)"}
@@ -242,7 +244,7 @@ export default function ChatInterface() {
               size="sm"
               onClick={() => clearHistory.mutate()}
               disabled={clearHistory.isPending}
-              className="bg-slate-400 hover:bg-slate-500 text-white dark:bg-slate-500 dark:hover:bg-slate-400"
+              className="bg-slate-500 hover:bg-slate-600 text-white dark:bg-slate-600 dark:hover:bg-slate-500"
             >
               <Trash2 className="w-4 h-4 mr-2" />
               Clear
