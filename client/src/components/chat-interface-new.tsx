@@ -200,9 +200,9 @@ export default function ChatInterface() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'bg-slate-800' : 'bg-gray-50'}`}>
       {/* Header */}
-      <div className="flex-shrink-0 bg-white border-b px-6 py-4">
+      <div className={`flex-shrink-0 ${theme === 'dark' ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-200'} border-b px-6 py-4`}>
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             <Sparkles className="w-5 h-5 text-blue-600" />
@@ -257,13 +257,13 @@ export default function ChatInterface() {
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Welcome message */}
           {messages.length === 0 && !isLoading && (
-            <Card className="bg-blue-50 border-blue-200">
+            <Card className={`${theme === 'dark' ? 'bg-slate-700 border-slate-600' : 'bg-blue-50 border-blue-200'}`}>
               <CardContent className="p-6">
                 <div className="text-center">
-                  <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                    Chat about <a href="https://book.derivative-securities.org/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline"><em>Pricing and Hedging Derivative Securities</em></a> with OpenAI GPT-4o.
+                  <h2 className={`text-xl font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-2`}>
+                    Chat about <a href="https://book.derivative-securities.org/" target="_blank" rel="noopener noreferrer" className={`${theme === 'dark' ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'} underline`}><em>Pricing and Hedging Derivative Securities</em></a> with OpenAI GPT-4o.
                   </h2>
-                  <p className="text-gray-600">
+                  <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                     Courtesy of the authors: Kerry Back, Hong Liu, and Mark Loewenstein.
                   </p>
                 </div>
@@ -278,10 +278,10 @@ export default function ChatInterface() {
                 <div className="flex justify-end">
                   <div className="max-w-2xl">
                     <div className="flex items-center gap-2 mb-2 justify-end">
-                      <span className="text-sm text-gray-500">You</span>
-                      <User className="w-4 h-4 text-gray-500" />
+                      <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>You</span>
+                      <User className={`w-4 h-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
                     </div>
-                    <Card className="bg-blue-600 text-white">
+                    <Card className={`${theme === 'dark' ? 'bg-blue-700' : 'bg-blue-600'} text-white`}>
                       <CardContent className="p-4">
                         <p className="whitespace-pre-wrap">{message.content}</p>
                       </CardContent>
@@ -292,12 +292,12 @@ export default function ChatInterface() {
                 <div className="flex justify-start">
                   <div className="max-w-3xl w-full">
                     <div className="flex items-center gap-2 mb-2">
-                      <Bot className="w-4 h-4 text-gray-500" />
-                      <span className="text-sm text-gray-500">Assistant</span>
+                      <Bot className={`w-4 h-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
+                      <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Assistant</span>
                     </div>
-                    <Card>
+                    <Card className={`${theme === 'dark' ? 'bg-slate-700 border-slate-600' : 'bg-white border-gray-200'}`}>
                       <CardContent className="p-4 overflow-visible">
-                        <div className="overflow-visible">
+                        <div className={`overflow-visible ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>
                           <MathContent content={message.content} />
                         </div>
                       </CardContent>
@@ -335,7 +335,7 @@ export default function ChatInterface() {
       </div>
 
       {/* Input Area */}
-      <div className="flex-shrink-0 bg-white border-t px-6 py-4">
+      <div className={`flex-shrink-0 ${theme === 'dark' ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-200'} border-t px-6 py-4`}>
         <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
           <div className="flex gap-3">
             <div className="flex-1">
@@ -345,8 +345,8 @@ export default function ChatInterface() {
                 onKeyDown={handleKeyDown}
                 onCompositionStart={() => setIsComposing(true)}
                 onCompositionEnd={() => setIsComposing(false)}
-                placeholder="Ask a question"
-                className="min-h-[60px] resize-none"
+                placeholder="Ask about derivative securities..."
+                className={`min-h-[60px] resize-none ${theme === 'dark' ? 'bg-slate-800 border-slate-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
                 disabled={sendMessage.isPending}
               />
             </div>
