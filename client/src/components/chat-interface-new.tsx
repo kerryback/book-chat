@@ -200,9 +200,9 @@ export default function ChatInterface() {
   };
 
   return (
-    <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'bg-slate-800' : 'bg-gray-50'}`}>
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
       {/* Header */}
-      <div className={`flex-shrink-0 ${theme === 'dark' ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-200'} border-b px-6 py-4`}>
+      <div className="flex-shrink-0 bg-card border-border border-b px-6 py-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             <Sparkles className="w-5 h-5 text-blue-600" />
@@ -220,7 +220,7 @@ export default function ChatInterface() {
               variant="outline"
               size="sm"
               onClick={toggleTheme}
-              className="text-gray-600 hover:text-gray-700"
+              className="text-muted-foreground hover:text-foreground"
             >
               {theme === "light" ? (
                 <Moon className="w-4 h-4" />
@@ -257,13 +257,13 @@ export default function ChatInterface() {
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Welcome message */}
           {messages.length === 0 && !isLoading && (
-            <Card className={`${theme === 'dark' ? 'bg-slate-700 border-slate-600' : 'bg-blue-50 border-blue-200'}`}>
+            <Card className="bg-muted/50">
               <CardContent className="p-6">
                 <div className="text-center">
-                  <h2 className={`text-xl font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-2`}>
-                    Chat about <a href="https://book.derivative-securities.org/" target="_blank" rel="noopener noreferrer" className={`${theme === 'dark' ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-800'} underline`}><em>Pricing and Hedging Derivative Securities</em></a> with OpenAI GPT-4o.
+                  <h2 className="text-xl font-semibold text-foreground mb-2">
+                    Chat about <a href="https://book.derivative-securities.org/" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 underline"><em>Pricing and Hedging Derivative Securities</em></a> with OpenAI GPT-4o.
                   </h2>
-                  <p className={`${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+                  <p className="text-muted-foreground">
                     Courtesy of the authors: Kerry Back, Hong Liu, and Mark Loewenstein.
                   </p>
                 </div>
@@ -278,10 +278,10 @@ export default function ChatInterface() {
                 <div className="flex justify-end">
                   <div className="max-w-2xl">
                     <div className="flex items-center gap-2 mb-2 justify-end">
-                      <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>You</span>
-                      <User className={`w-4 h-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
+                      <span className="text-sm text-muted-foreground">You</span>
+                      <User className="w-4 h-4 text-muted-foreground" />
                     </div>
-                    <Card className={`${theme === 'dark' ? 'bg-blue-700' : 'bg-blue-600'} text-white`}>
+                    <Card className="bg-primary text-primary-foreground">
                       <CardContent className="p-4">
                         <p className="whitespace-pre-wrap">{message.content}</p>
                       </CardContent>
@@ -292,15 +292,15 @@ export default function ChatInterface() {
                 <div className="flex justify-start">
                   <div className="max-w-3xl w-full">
                     <div className="flex items-center gap-2 mb-2">
-                      <Bot className={`w-4 h-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
-                      <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Assistant</span>
+                      <Bot className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Assistant</span>
                     </div>
-                    <Card className={`${theme === 'dark' ? 'bg-slate-700 border-slate-600' : 'bg-white border-gray-200'}`}>
+                    <Card className="bg-card border-border">
                       <CardContent className="p-4 overflow-visible">
                         <div className="overflow-visible">
                           <MathContent 
                             content={message.content} 
-                            className={theme === 'dark' ? 'text-gray-100' : 'text-gray-900'} 
+                            className="text-foreground" 
                           />
                         </div>
                       </CardContent>
@@ -316,16 +316,16 @@ export default function ChatInterface() {
             <div className="flex justify-start">
               <div className="max-w-3xl">
                 <div className="flex items-center gap-2 mb-2">
-                  <Bot className="w-4 h-4 text-gray-500" />
-                  <span className="text-sm text-gray-500">Assistant</span>
+                  <Bot className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Assistant</span>
                 </div>
                 <Card>
                   <CardContent className="p-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                      <span className="text-sm text-gray-500 ml-2">Thinking...</span>
+                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      <span className="text-sm text-muted-foreground ml-2">Thinking...</span>
                     </div>
                   </CardContent>
                 </Card>

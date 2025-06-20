@@ -12,10 +12,10 @@ export function useTheme() {
     const root = document.documentElement;
     
     // Remove existing theme classes
-    root.classList.remove("theme-light", "theme-dark");
+    root.classList.remove("light", "dark");
     
     // Add current theme class
-    root.classList.add(`theme-${theme}`);
+    root.classList.add(theme);
     
     // Save to localStorage
     localStorage.setItem("theme", theme);
