@@ -24,12 +24,12 @@ export function MathContent({ content, className = "" }: MathContentProps) {
     const mathPlaceholders: { [key: string]: string } = {};
     let placeholderCount = 0;
     
-    // Protect math expressions
+    // Protect math expressions - order matters, do multiline first
     const mathPatterns = [
-      /\$\$([\s\S]*?)\$\$/g,
-      /\\\[([\s\S]*?)\\\]/g,
-      /\\\(([\s\S]*?)\\\)/g,
-      /\$([^$\n]+)\$/g
+      /\$\$([\s\S]*?)\$\$/g,  // Block math $$...$$
+      /\\\[([\s\S]*?)\\\]/g,  // Block math \[...\]
+      /\\\(([\s\S]*?)\\\)/g,  // Inline math \(...\)
+      /\$([^$\r\n]*)\$/g      // Inline math $...$ (single line only)
     ];
     
     let protectedText = text;
@@ -42,77 +42,106 @@ export function MathContent({ content, className = "" }: MathContentProps) {
       });
     });
     
-    // Process headers first (###, ##, #)
-    const headerRegex = /^(#{1,6})\s+(.+)$/gm;
-    const headerSplit = protectedText.split(headerRegex);
+    // Process block-level elements (headers, blockquotes, paragraphs)
+    const lines = protectedText.split('\n');
+    let currentBlockquote: string[] = [];
+    let i = 0;
     
-    for (let i = 0; i < headerSplit.length; i++) {
-      if (i % 3 === 1) { // This is the # symbols
-        const level = headerSplit[i].length;
-        const headerText = headerSplit[i + 1];
-        const HeaderTag = `h${level}` as keyof JSX.IntrinsicElements;
+    const flushBlockquote = () => {
+      if (currentBlockquote.length > 0) {
+        const blockquoteContent = currentBlockquote.join('\n').replace(/^>\s?/gm, '');
         elements.push(
-          <HeaderTag key={`header-${key++}`} className={`font-bold ${level === 1 ? 'text-2xl' : level === 2 ? 'text-xl' : level === 3 ? 'text-lg' : 'text-base'} my-2`}>
-            {parseInlineMarkdown(headerText, mathPlaceholders)}
-          </HeaderTag>
+          <blockquote key={`blockquote-${key++}`} className="border-l-4 border-gray-300 pl-4 my-4 italic text-gray-700">
+            {parseInlineMarkdown(blockquoteContent, mathPlaceholders)}
+          </blockquote>
         );
-        i += 1; // Skip the header text as we've already processed it
-      } else if (i % 3 === 0 && headerSplit[i]) { // Regular text
-        elements.push(...parseInlineMarkdown(headerSplit[i], mathPlaceholders).map((el, idx) => 
-          React.cloneElement(el, { key: `text-${key++}-${idx}` })
-        ));
+        currentBlockquote = [];
       }
+    };
+    
+    while (i < lines.length) {
+      const line = lines[i];
+      
+      // Handle blockquotes
+      if (line.startsWith('>')) {
+        currentBlockquote.push(line);
+      } else {
+        flushBlockquote();
+        
+        // Handle headers
+        const headerMatch = line.match(/^(#{1,6})\s+(.+)$/);
+        if (headerMatch) {
+          const level = headerMatch[1].length;
+          const headerText = headerMatch[2];
+          const HeaderTag = `h${level}` as keyof JSX.IntrinsicElements;
+          elements.push(
+            <HeaderTag key={`header-${key++}`} className={`font-bold ${level === 1 ? 'text-2xl' : level === 2 ? 'text-xl' : level === 3 ? 'text-lg' : 'text-base'} my-2`}>
+              {parseInlineMarkdown(headerText, mathPlaceholders)}
+            </HeaderTag>
+          );
+        } else if (line.trim()) {
+          // Regular paragraph
+          elements.push(
+            <p key={`paragraph-${key++}`} className="my-2">
+              {parseInlineMarkdown(line, mathPlaceholders)}
+            </p>
+          );
+        }
+      }
+      i++;
     }
     
-    return elements.length > 0 ? elements : parseInlineMarkdown(protectedText, mathPlaceholders);
+    flushBlockquote(); // Handle any remaining blockquote
+    
+    return elements.length > 0 ? elements : [<span key="fallback">{restoreMathPlaceholders(protectedText, mathPlaceholders)}</span>];
   };
   
   // Helper function to parse inline markdown (bold, italic) and restore math placeholders
   const parseInlineMarkdown = (text: string, mathPlaceholders: { [key: string]: string } = {}): JSX.Element[] => {
+    // First restore all math placeholders
+    const restoredText = restoreMathPlaceholders(text, mathPlaceholders);
+    
     const parts: JSX.Element[] = [];
-    let remaining = text;
+    let remaining = restoredText;
     let key = 0;
     
-    // Combined regex for bold and italic
-    const formattingRegex = /(\*\*\*(.+?)\*\*\*|\*\*(.+?)\*\*|\*(.+?)\*|__(.+?)__|_(.+?)_)/;
+    // Combined regex for bold and italic - avoid matching across math expressions
+    const formattingRegex = /(\*\*\*([^*]+?)\*\*\*|\*\*([^*]+?)\*\*|\*([^*]+?)\*|__([^_]+?)__|_([^_]+?)_)/g;
+    let lastIndex = 0;
+    let match;
     
-    while (remaining) {
-      const match = remaining.match(formattingRegex);
-      
-      if (!match) {
-        if (remaining) {
-          // Restore math placeholders in the final text
-          const restoredText = restoreMathPlaceholders(remaining, mathPlaceholders);
-          parts.push(<span key={`span-${key++}`}>{restoredText}</span>);
-        }
-        break;
-      }
-      
+    while ((match = formattingRegex.exec(remaining)) !== null) {
       // Add text before the match
-      if (match.index! > 0) {
-        const beforeText = remaining.substring(0, match.index);
-        const restoredBeforeText = restoreMathPlaceholders(beforeText, mathPlaceholders);
-        parts.push(<span key={`span-${key++}`}>{restoredBeforeText}</span>);
+      if (match.index > lastIndex) {
+        const beforeText = remaining.substring(lastIndex, match.index);
+        if (beforeText) {
+          parts.push(<span key={`span-${key++}`}>{beforeText}</span>);
+        }
       }
       
       // Add formatted text
       if (match[2]) { // *** bold italic ***
-        const restoredText = restoreMathPlaceholders(match[2], mathPlaceholders);
-        parts.push(<strong key={`strong-italic-${key++}`}><em>{restoredText}</em></strong>);
+        parts.push(<strong key={`strong-italic-${key++}`}><em>{match[2]}</em></strong>);
       } else if (match[3] || match[5]) { // ** bold ** or __ bold __
         const boldText = match[3] || match[5];
-        const restoredText = restoreMathPlaceholders(boldText, mathPlaceholders);
-        parts.push(<strong key={`strong-${key++}`}>{restoredText}</strong>);
+        parts.push(<strong key={`strong-${key++}`}>{boldText}</strong>);
       } else if (match[4] || match[6]) { // * italic * or _ italic _
         const italicText = match[4] || match[6];
-        const restoredText = restoreMathPlaceholders(italicText, mathPlaceholders);
-        parts.push(<em key={`em-${key++}`}>{restoredText}</em>);
+        parts.push(<em key={`em-${key++}`}>{italicText}</em>);
       }
       
-      remaining = remaining.substring(match.index! + match[0].length);
+      lastIndex = match.index + match[0].length;
     }
     
-    return parts;
+    // Add remaining text
+    if (lastIndex < remaining.length) {
+      const remainingText = remaining.substring(lastIndex);
+      if (remainingText) {
+        parts.push(<span key={`span-${key++}`}>{remainingText}</span>);
+      }
+    }
+    
+    return parts.length > 0 ? parts : [<span key={`span-${key++}`}>{restoredText}</span>];
   };
   
   // Helper function to restore math placeholders
