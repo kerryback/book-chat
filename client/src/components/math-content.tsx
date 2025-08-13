@@ -1,5 +1,6 @@
 // @ts-ignore
 import { InlineMath, BlockMath } from "react-katex";
+import React from "react";
 
 interface MathContentProps {
   content: string;
@@ -14,6 +15,77 @@ interface MathExpression {
 }
 
 export function MathContent({ content, className = "" }: MathContentProps) {
+  // Helper function to parse markdown formatting
+  const parseMarkdown = (text: string): JSX.Element[] => {
+    const elements: JSX.Element[] = [];
+    let key = 0;
+    
+    // Process headers first (###, ##, #)
+    const headerRegex = /^(#{1,6})\s+(.+)$/gm;
+    const headerSplit = text.split(headerRegex);
+    
+    for (let i = 0; i < headerSplit.length; i++) {
+      if (i % 3 === 1) { // This is the # symbols
+        const level = headerSplit[i].length;
+        const headerText = headerSplit[i + 1];
+        const HeaderTag = `h${level}` as keyof JSX.IntrinsicElements;
+        elements.push(
+          <HeaderTag key={`header-${key++}`} className={`font-bold ${level === 1 ? 'text-2xl' : level === 2 ? 'text-xl' : level === 3 ? 'text-lg' : 'text-base'} my-2`}>
+            {parseInlineMarkdown(headerText)}
+          </HeaderTag>
+        );
+        i += 1; // Skip the header text as we've already processed it
+      } else if (i % 3 === 0 && headerSplit[i]) { // Regular text
+        elements.push(...parseInlineMarkdown(headerSplit[i]).map((el, idx) => 
+          React.cloneElement(el, { key: `text-${key++}-${idx}` })
+        ));
+      }
+    }
+    
+    return elements.length > 0 ? elements : parseInlineMarkdown(text);
+  };
+  
+  // Helper function to parse inline markdown (bold, italic)
+  const parseInlineMarkdown = (text: string): JSX.Element[] => {
+    const parts: JSX.Element[] = [];
+    let remaining = text;
+    let key = 0;
+    
+    // Combined regex for bold and italic
+    const formattingRegex = /(\*\*\*(.+?)\*\*\*|\*\*(.+?)\*\*|\*(.+?)\*|__(.+?)__|_(.+?)_)/;
+    
+    while (remaining) {
+      const match = remaining.match(formattingRegex);
+      
+      if (!match) {
+        if (remaining) {
+          parts.push(<span key={`span-${key++}`}>{remaining}</span>);
+        }
+        break;
+      }
+      
+      // Add text before the match
+      if (match.index! > 0) {
+        parts.push(<span key={`span-${key++}`}>{remaining.substring(0, match.index)}</span>);
+      }
+      
+      // Add formatted text
+      if (match[2]) { // *** bold italic ***
+        parts.push(<strong key={`strong-italic-${key++}`}><em>{match[2]}</em></strong>);
+      } else if (match[3] || match[5]) { // ** bold ** or __ bold __
+        const boldText = match[3] || match[5];
+        parts.push(<strong key={`strong-${key++}`}>{boldText}</strong>);
+      } else if (match[4] || match[6]) { // * italic * or _ italic _
+        const italicText = match[4] || match[6];
+        parts.push(<em key={`em-${key++}`}>{italicText}</em>);
+      }
+      
+      remaining = remaining.substring(match.index! + match[0].length);
+    }
+    
+    return parts;
+  };
+  
   const renderContent = (text: string) => {
     const parts: JSX.Element[] = [];
     
@@ -92,11 +164,12 @@ export function MathContent({ content, className = "" }: MathContentProps) {
     for (let i = 0; i < filteredExpressions.length; i++) {
       const expr = filteredExpressions[i];
       
-      // Add text before math
+      // Add text before math with markdown parsing
       if (expr.start > lastIndex) {
         const textBefore = text.slice(lastIndex, expr.start);
         if (textBefore) {
-          parts.push(<span key={`text-${i}`}>{textBefore}</span>);
+          const markdownElements = parseMarkdown(textBefore);
+          parts.push(<span key={`text-${i}`}>{markdownElements}</span>);
         }
       }
 
@@ -126,15 +199,17 @@ export function MathContent({ content, className = "" }: MathContentProps) {
       lastIndex = expr.end;
     }
 
-    // Add remaining text
+    // Add remaining text with markdown parsing
     if (lastIndex < text.length) {
       const remainingText = text.slice(lastIndex);
       if (remainingText) {
-        parts.push(<span key="text-end">{remainingText}</span>);
+        const markdownElements = parseMarkdown(remainingText);
+        parts.push(<span key="text-end">{markdownElements}</span>);
       }
     }
 
-    return parts.length > 0 ? parts : [<span key="original">{text}</span>];
+    // If no math expressions found, just parse the whole text as markdown
+    return parts.length > 0 ? parts : parseMarkdown(text);
   };
 
   return (
