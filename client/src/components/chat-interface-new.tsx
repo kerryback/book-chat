@@ -262,7 +262,7 @@ export default function ChatInterface() {
               <CardContent className="p-6">
                 <div className="text-center">
                   <h2 className="text-xl font-semibold text-foreground mb-2">
-                    Chat about <a href="https://book.derivative-securities.org/" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 underline"><em>Pricing and Hedging Derivative Securities</em></a> with OpenAI GPT-4o.
+                    Chat about <a href="https://book.derivative-securities.org/" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 underline"><em>Pricing and Hedging Derivative Securities</em></a> with OpenAI GPT-4.1.
                   </h2>
                   <p className="text-muted-foreground">
                     Courtesy of the authors: Kerry Back, Hong Liu, and Mark Loewenstein.
