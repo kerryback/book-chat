@@ -39,6 +39,8 @@ app.use((req, res, next) => {
 
 (async () => {
   log("Starting server initialization...");
+  log(`Node environment: ${process.env.NODE_ENV}`);
+  log(`Port: ${process.env.PORT || 5000}`);
   
   // Ensure uploads directory exists
   if (!fs.existsSync("uploads")) {
