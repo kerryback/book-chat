@@ -76,6 +76,18 @@ export function serveStatic(app: Express) {
     );
   }
 
+  // Add URI validation middleware before static serving
+  app.use((req, res, next) => {
+    try {
+      decodeURIComponent(req.path);
+      next();
+    } catch (err) {
+      // Log the malformed URI attempt for security monitoring
+      log(`Blocked malformed URI: ${req.path}`, "security");
+      res.status(400).json({ error: "Invalid URI" });
+    }
+  });
+
   app.use(express.static(distPath));
 
   // fall through to index.html if the file doesn't exist
