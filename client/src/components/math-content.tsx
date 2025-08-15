@@ -18,10 +18,8 @@ export function MathContent({ content, className = "" }: MathContentProps) {
     .replace(/\\\[([\s\S]*?)\\\]/g, '$$$$1$$')
     // Convert inline math from \( \) to $ $
     .replace(/\\\(([\s\S]*?)\\\)/g, '$$$1$$')
-    // Convert escaped parentheses that should be math delimiters
-    .replace(/\[\s*\\([^\\]*?)\s*\]/g, '$$$$1$$')
-    // Convert remaining ( ) patterns that look like math
-    .replace(/\(\s*([^)]*?[a-zA-Z_{}^\\]+[^)]*?)\s*\)/g, '$$$1$$');
+    // Convert bracketed expressions that contain LaTeX commands (more precise)
+    .replace(/\[\s*(\\[a-zA-Z]+[^\\]*?|[^a-zA-Z\]]*\\[^\\]*?)\s*\]/g, '$$$$1$$');
   
   console.log('Processed content sample:', processedContent.substring(0, 300) + '...');
   
