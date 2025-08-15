@@ -1,0 +1,36 @@
+# Stage 1: Build stage
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install all dependencies (including dev)
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Build the application with memory limits
+ENV NODE_OPTIONS="--max-old-space-size=512"
+RUN npm run build:sequential
+
+# Stage 2: Production stage
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package files and install only production deps
+COPY package*.json ./
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy built artifacts from builder stage
+COPY --from=builder /app/dist ./dist
+
+# Create necessary directories
+RUN mkdir -p uploads
+
+EXPOSE 3000
+
+CMD ["npm", "start"]

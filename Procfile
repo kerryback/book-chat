@@ -1,1 +1,1 @@
-web: npm run build:low-memory && npm start
+web: npm run build:koyeb-pro && npm start

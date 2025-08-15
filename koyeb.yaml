@@ -1,0 +1,40 @@
+app:
+  name: book-chat
+  
+services:
+  - name: web
+    type: web
+    
+    # Use a larger instance for builds
+    instance_type: large
+    
+    # Build configuration
+    build:
+      build_command: npm run build:koyeb-pro
+      run_command: npm start
+      
+    # Environment variables
+    env:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_OPTIONS
+        value: "--max-old-space-size=4096"
+        
+    # Health check
+    health_check:
+      path: /
+      interval: 30
+      timeout: 10
+      
+    # Scaling
+    scaling:
+      min: 1
+      max: 1
+      
+    # Port
+    ports:
+      - port: 3000
+        protocol: http
+        
+    # Build timeout (10 minutes)
+    build_timeout: 600

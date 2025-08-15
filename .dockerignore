@@ -1,0 +1,14 @@
+node_modules
+.git
+.env
+uploads
+*.log
+.DS_Store
+client/node_modules
+client/src
+server
+shared
+scripts
+*.ts
+*.tsx
+!dist/**
