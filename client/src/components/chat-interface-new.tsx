@@ -215,12 +215,12 @@ export default function ChatInterface() {
             />
             <Button
               variant="secondary"
-              size="sm"
+              size="xs"
               onClick={handleUploadClick}
               disabled={uploadFile.isPending}
-              className="bg-slate-500 hover:bg-slate-600 text-white dark:bg-slate-600 dark:hover:bg-slate-500"
+              className="bg-gray-300 hover:bg-gray-400 text-gray-700 dark:bg-gray-400 dark:hover:bg-gray-300 dark:text-gray-800 text-xs px-2 py-1"
             >
-              <Upload className="w-4 h-4 mr-2" />
+              <Upload className="w-3 h-3 mr-1" />
               {uploadFile.isPending ? "Uploading..." : "Upload (authors only)"}
             </Button>
           </div>
@@ -241,12 +241,12 @@ export default function ChatInterface() {
           <div className="flex items-center gap-2 flex-1 justify-end">
             <Button
               variant="secondary"
-              size="sm"
+              size="xs"
               onClick={() => clearHistory.mutate()}
               disabled={clearHistory.isPending}
-              className="bg-slate-500 hover:bg-slate-600 text-white dark:bg-slate-600 dark:hover:bg-slate-500"
+              className="bg-gray-300 hover:bg-gray-400 text-gray-700 dark:bg-gray-400 dark:hover:bg-gray-300 dark:text-gray-800 text-xs px-2 py-1"
             >
-              <Trash2 className="w-4 h-4 mr-2" />
+              <Trash2 className="w-3 h-3 mr-1" />
               Clear
             </Button>
           </div>
