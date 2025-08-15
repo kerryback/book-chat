@@ -188,6 +188,15 @@ IMPORTANT: When referencing information from the sources, you MUST use the speci
 
 Always cite the actual chapter and section names when they are provided in the source information.
 
+MATHEMATICAL NOTATION: When writing mathematical expressions, use dollar sign delimiters:
+- For inline math, use single dollars: $\mu$ or $x^2$
+- For display/block math, use double dollars on separate lines:
+$$
+\mathrm{d} Y_t = f'(B_t)\mathrm{d} B_t + \frac{1}{2}f''(B_t)\mathrm{d} t
+$$
+
+Do NOT use \( \) or \[ \] for math delimiters.
+
 If the context doesn't contain relevant information, say so clearly.
 
 Context from documents:
