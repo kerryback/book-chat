@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 
-// Using GPT-4o model (latest GPT-4)
+// Using GPT-4.1 model
 const openai = new OpenAI({ 
   apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_ENV_VAR || ""
 });
@@ -16,7 +16,7 @@ export interface ChatCompletionOptions {
 export async function createChatCompletion(options: ChatCompletionOptions): Promise<string> {
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4.1",
       messages: options.messages,
       max_tokens: options.maxTokens || 1000,
       temperature: 0.7,
