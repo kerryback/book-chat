@@ -280,7 +280,7 @@ export function MathContent({ content, className = "" }: MathContentProps) {
       
       // Add text before math - just plain text, no markdown parsing
       if (expr.start > lastIndex) {
-        const textBefore = text.slice(lastIndex, expr.start).trim();
+        const textBefore = text.slice(lastIndex, expr.start);
         if (textBefore) {
           parts.push(<span key={`text-${i}`}>{textBefore}</span>);
         }
@@ -295,10 +295,16 @@ export function MathContent({ content, className = "" }: MathContentProps) {
             </div>
           );
         } else {
+          // Check if we need spaces around inline math
+          const needsSpaceBefore = expr.start > 0 && text[expr.start - 1] !== ' ';
+          const needsSpaceAfter = expr.end < text.length && text[expr.end] !== ' ';
+          
           parts.push(
-            <span key={`math-${i}`} className="inline-block mx-1">
+            <React.Fragment key={`math-${i}`}>
+              {needsSpaceBefore ? ' ' : ''}
               <InlineMath math={expr.content} />
-            </span>
+              {needsSpaceAfter ? ' ' : ''}
+            </React.Fragment>
           );
         }
       } catch (error) {
@@ -314,7 +320,7 @@ export function MathContent({ content, className = "" }: MathContentProps) {
 
     // Add remaining text
     if (lastIndex < text.length) {
-      const remainingText = text.slice(lastIndex).trim();
+      const remainingText = text.slice(lastIndex);
       if (remainingText) {
         parts.push(<span key="text-end">{remainingText}</span>);
       }
