@@ -34,6 +34,9 @@ app.use((req, res, next) => {
     } else if (path.startsWith("/assets/")) {
       // Log asset requests for debugging
       log(`ASSET: ${req.method} ${path} ${res.statusCode} in ${duration}ms`);
+    } else if (path === "/" || path.endsWith(".html")) {
+      // Log HTML requests for debugging
+      log(`HTML: ${req.method} ${path} ${res.statusCode} in ${duration}ms`);
     }
   });
 

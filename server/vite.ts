@@ -88,7 +88,20 @@ export function serveStatic(app: Express) {
     }
   });
 
-  app.use(express.static(distPath));
+  app.use(express.static(distPath, {
+    // Add cache control headers
+    setHeaders: (res, path) => {
+      if (path.endsWith('.html')) {
+        // Don't cache HTML files
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+      } else if (path.includes('/assets/')) {
+        // Cache assets for a short time with revalidation
+        res.setHeader('Cache-Control', 'public, max-age=3600, must-revalidate');
+      }
+    }
+  }));
 
   // fall through to index.html if the file doesn't exist
   app.use("*", (req, res) => {
@@ -96,6 +109,10 @@ export function serveStatic(app: Express) {
     if (req.path.startsWith('/assets/')) {
       log(`Asset not found, falling back to index.html: ${req.path}`, "static");
     }
+    // Set no-cache headers for the fallback HTML
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }
