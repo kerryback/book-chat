@@ -12,6 +12,19 @@ export function MathContent({ content, className = "" }: MathContentProps) {
   // Debug: Let's see what we're actually rendering
   console.log('MathContent content:', content.substring(0, 200) + '...');
   
+  // Preprocess content to convert LaTeX delimiters to supported format
+  const processedContent = content
+    // Convert display math from \[ \] to $$ $$
+    .replace(/\\\[([\s\S]*?)\\\]/g, '$$$$1$$')
+    // Convert inline math from \( \) to $ $
+    .replace(/\\\(([\s\S]*?)\\\)/g, '$$$1$$')
+    // Convert escaped parentheses that should be math delimiters
+    .replace(/\[\s*\\([^\\]*?)\s*\]/g, '$$$$1$$')
+    // Convert remaining ( ) patterns that look like math
+    .replace(/\(\s*([^)]*?[a-zA-Z_{}^\\]+[^)]*?)\s*\)/g, '$$$1$$');
+  
+  console.log('Processed content sample:', processedContent.substring(0, 300) + '...');
+  
   return (
     <div className={`${className}`}>
       <ReactMarkdown
@@ -57,7 +70,7 @@ export function MathContent({ content, className = "" }: MathContentProps) {
           ),
         }}
       >
-        {content}
+        {processedContent}
       </ReactMarkdown>
     </div>
   );
