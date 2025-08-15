@@ -156,6 +156,75 @@ export function MathContent({ content, className = "" }: MathContentProps) {
   const renderContent = (text: string) => {
     const parts: JSX.Element[] = [];
     
+    // First, handle lists by processing them line by line
+    const lines = text.split('\n');
+    const processedLines: string[] = [];
+    let inList = false;
+    let listItems: string[] = [];
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const listMatch = line.match(/^(\s*)-\s+(.+)$/);
+      
+      if (listMatch) {
+        inList = true;
+        listItems.push(listMatch[2]); // Get content after "- "
+      } else if (inList && line.trim() === '') {
+        // Empty line ends the list
+        if (listItems.length > 0) {
+          parts.push(
+            <ul key={`list-${parts.length}`} className="my-2 ml-6 list-disc">
+              {listItems.map((item, idx) => (
+                <li key={idx}>{renderMathInText(item)}</li>
+              ))}
+            </ul>
+          );
+          listItems = [];
+        }
+        inList = false;
+      } else if (inList && !listMatch) {
+        // Non-list line ends the list
+        if (listItems.length > 0) {
+          parts.push(
+            <ul key={`list-${parts.length}`} className="my-2 ml-6 list-disc">
+              {listItems.map((item, idx) => (
+                <li key={idx}>{renderMathInText(item)}</li>
+              ))}
+            </ul>
+          );
+          listItems = [];
+        }
+        inList = false;
+        processedLines.push(line);
+      } else {
+        processedLines.push(line);
+      }
+    }
+    
+    // Handle any remaining list items
+    if (listItems.length > 0) {
+      parts.push(
+        <ul key={`list-${parts.length}`} className="my-2 ml-6 list-disc">
+          {listItems.map((item, idx) => (
+            <li key={idx}>{renderMathInText(item)}</li>
+          ))}
+        </ul>
+      );
+    }
+    
+    // Process remaining text for math expressions
+    const remainingText = processedLines.join('\n');
+    if (remainingText.trim()) {
+      parts.push(...renderMathInText(remainingText));
+    }
+    
+    return parts.length > 0 ? parts : [<span key="empty">No content</span>];
+  };
+  
+  // Helper function to render math within text
+  const renderMathInText = (text: string): JSX.Element[] => {
+    const parts: JSX.Element[] = [];
+    
     // Use simpler regex patterns for better compatibility
     const blockMathRegex = /\$\$([\s\S]*?)\$\$/g;
     const inlineMathRegex = /\\\(([\s\S]*?)\\\)/g;
