@@ -136,15 +136,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         role: "user",
       });
 
-      // Search for relevant chunks
-      const searchResults = await searchSimilarChunks(content, 5);
+      // Check if any documents exist first
+      const documents = await storage.getAllDocuments();
+      const completedDocs = documents.filter(doc => doc.status === "completed");
       
-      if (searchResults.length === 0) {
+      if (completedDocs.length === 0) {
         const noDocsResponse = await storage.createChatMessage({
           content: "I don't have any documents to search through yet. Please upload some markdown files first.",
           role: "assistant",
         });
         return res.json({ userMessage, assistantMessage: noDocsResponse });
+      }
+      
+      // Search for relevant chunks
+      const searchResults = await searchSimilarChunks(content, 5);
+      
+      if (searchResults.length === 0) {
+        const offTopicResponse = await storage.createChatMessage({
+          content: "I'm sorry, but I am only able to answer questions about Pricing and Hedging Derivative Securities.",
+          role: "assistant",
+        });
+        return res.json({ userMessage, assistantMessage: offTopicResponse });
       }
 
       // Prepare context from search results with chapter/section metadata
