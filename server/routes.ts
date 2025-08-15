@@ -37,13 +37,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Root endpoint for Koyeb health checks
-  app.get("/", (req, res) => {
+  app.get("/", (req, res, next) => {
     // Only respond with health check if it's not a browser request
     if (req.headers.accept && !req.headers.accept.includes('text/html')) {
       return res.json({ status: "ok", timestamp: new Date().toISOString() });
     }
     // Let it fall through to static file serving for browser requests
-    res.status(404).end();
+    next();
   });
   
   // Get all documents
