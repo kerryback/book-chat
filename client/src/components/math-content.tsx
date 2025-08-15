@@ -231,12 +231,13 @@ export function MathContent({ content, className = "" }: MathContentProps) {
     for (let i = 0; i < filteredExpressions.length; i++) {
       const expr = filteredExpressions[i];
       
-      // Add text before math with markdown parsing
+      // Add text before math - just plain text, no markdown parsing
       if (expr.start > lastIndex) {
-        const textBefore = text.slice(lastIndex, expr.start);
+        const textBefore = text.slice(lastIndex, expr.start).trim();
         if (textBefore) {
-          const markdownElements = parseMarkdown(textBefore);
-          parts.push(<span key={`text-${i}`}>{markdownElements}</span>);
+          // Parse simple inline formatting only (bold/italic)
+          const inlineElements = parseInlineMarkdown(textBefore);
+          parts.push(<span key={`text-${i}`}>{inlineElements}</span>);
         }
       }
 
@@ -244,15 +245,13 @@ export function MathContent({ content, className = "" }: MathContentProps) {
       try {
         if (expr.type === 'block') {
           parts.push(
-            <div key={`math-${i}`} className="my-4 text-center">
+            <div key={`math-${i}`} className="my-4 overflow-x-auto">
               <BlockMath math={expr.content} />
             </div>
           );
         } else {
           parts.push(
-            <span key={`math-${i}`} className="mx-1">
-              <InlineMath math={expr.content} />
-            </span>
+            <InlineMath key={`math-${i}`} math={expr.content} />
           );
         }
       } catch (error) {
@@ -266,22 +265,22 @@ export function MathContent({ content, className = "" }: MathContentProps) {
       lastIndex = expr.end;
     }
 
-    // Add remaining text with markdown parsing
+    // Add remaining text
     if (lastIndex < text.length) {
-      const remainingText = text.slice(lastIndex);
+      const remainingText = text.slice(lastIndex).trim();
       if (remainingText) {
-        const markdownElements = parseMarkdown(remainingText);
-        parts.push(<span key="text-end">{markdownElements}</span>);
+        const inlineElements = parseInlineMarkdown(remainingText);
+        parts.push(<span key="text-end">{inlineElements}</span>);
       }
     }
 
-    // If no math expressions found, just parse the whole text as markdown
-    return parts.length > 0 ? parts : parseMarkdown(text);
+    // If no math expressions found, just parse inline markdown
+    return parts.length > 0 ? parts : parseInlineMarkdown(text);
   };
 
   return (
     <div className={`prose prose-sm max-w-none overflow-visible ${className}`}>
-      <div className="whitespace-pre-wrap overflow-visible">
+      <div className="overflow-visible">
         {renderContent(content)}
       </div>
     </div>
