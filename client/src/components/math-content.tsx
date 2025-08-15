@@ -133,22 +133,33 @@ export function MathContent({ content, className = "" }: MathContentProps) {
   
   const renderContent = (text: string) => {
     const parts: JSX.Element[] = [];
-    
-    // First, handle lists by processing them line by line
     const lines = text.split('\n');
-    const processedLines: string[] = [];
-    let inList = false;
-    let listItems: string[] = [];
+    let i = 0;
     
-    for (let i = 0; i < lines.length; i++) {
+    while (i < lines.length) {
       const line = lines[i];
-      const listMatch = line.match(/^(\s*)-\s+(.+)$/);
       
+      // Check for list items
+      const listMatch = line.match(/^(\s*)-\s+(.+)$/);
       if (listMatch) {
-        inList = true;
-        listItems.push(listMatch[2]); // Get content after "- "
-      } else if (inList && line.trim() === '') {
-        // Empty line ends the list
+        // Found a list, collect all consecutive list items
+        const listItems: string[] = [];
+        while (i < lines.length) {
+          const currentLine = lines[i];
+          const currentListMatch = currentLine.match(/^(\s*)-\s+(.+)$/);
+          if (currentListMatch) {
+            listItems.push(currentListMatch[2]); // Get content after "- "
+            i++;
+          } else if (currentLine.trim() === '') {
+            // Empty line continues the list (skip it)
+            i++;
+          } else {
+            // Non-list line ends the list
+            break;
+          }
+        }
+        
+        // Add the complete list to parts
         if (listItems.length > 0) {
           parts.push(
             <ul key={`list-${parts.length}`} className="my-2 ml-6 list-disc">
@@ -157,43 +168,8 @@ export function MathContent({ content, className = "" }: MathContentProps) {
               ))}
             </ul>
           );
-          listItems = [];
         }
-        inList = false;
-      } else if (inList && !listMatch) {
-        // Non-list line ends the list
-        if (listItems.length > 0) {
-          parts.push(
-            <ul key={`list-${parts.length}`} className="my-2 ml-6 list-disc">
-              {listItems.map((item, idx) => (
-                <li key={idx}>{renderMathInText(item)}</li>
-              ))}
-            </ul>
-          );
-          listItems = [];
-        }
-        inList = false;
-        processedLines.push(line);
-      } else {
-        processedLines.push(line);
-      }
-    }
-    
-    // Handle any remaining list items
-    if (listItems.length > 0) {
-      parts.push(
-        <ul key={`list-${parts.length}`} className="my-2 ml-6 list-disc">
-          {listItems.map((item, idx) => (
-            <li key={idx}>{renderMathInText(item)}</li>
-          ))}
-        </ul>
-      );
-    }
-    
-    // Process remaining text line by line to avoid blockquote parsing
-    for (let i = 0; i < processedLines.length; i++) {
-      const line = processedLines[i];
-      if (line.trim()) {
+      } else if (line.trim()) {
         // Check for headers
         const headerMatch = line.match(/^(#{1,6})\s+(.+)$/);
         if (headerMatch) {
@@ -201,18 +177,22 @@ export function MathContent({ content, className = "" }: MathContentProps) {
           const headerText = headerMatch[2];
           const HeaderTag = `h${level}` as keyof JSX.IntrinsicElements;
           parts.push(
-            <HeaderTag key={`header-${i}`} className={`font-bold ${level === 1 ? 'text-2xl' : level === 2 ? 'text-xl' : level === 3 ? 'text-lg' : 'text-base'} my-2`}>
+            <HeaderTag key={`header-${parts.length}`} className={`font-bold ${level === 1 ? 'text-2xl' : level === 2 ? 'text-xl' : level === 3 ? 'text-lg' : 'text-base'} my-2`}>
               {renderMathInText(headerText)}
             </HeaderTag>
           );
         } else {
           // Regular paragraph
           parts.push(
-            <p key={`paragraph-${i}`} className="my-2">
+            <p key={`paragraph-${parts.length}`} className="my-2">
               {renderMathInText(line)}
             </p>
           );
         }
+        i++;
+      } else {
+        // Empty line, skip it
+        i++;
       }
     }
     
@@ -316,7 +296,9 @@ export function MathContent({ content, className = "" }: MathContentProps) {
           );
         } else {
           parts.push(
-            <InlineMath key={`math-${i}`} math={expr.content} />
+            <span key={`math-${i}`} className="inline-block mx-1">
+              <InlineMath math={expr.content} />
+            </span>
           );
         }
       } catch (error) {
