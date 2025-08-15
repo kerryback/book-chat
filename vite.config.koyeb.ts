@@ -32,49 +32,21 @@ export default defineConfig({
     
     rollupOptions: {
       output: {
-        // Better chunking strategy
+        // Simple, working chunking strategy
         manualChunks: {
-          // React ecosystem
-          'react-core': ['react', 'react-dom'],
-          'react-router': ['wouter'],
-          'react-query': ['@tanstack/react-query'],
-          
-          // UI libraries
-          'ui-radix': [
+          'react-vendor': ['react', 'react-dom'],
+          'ui-vendor': [
             '@radix-ui/react-dialog',
             '@radix-ui/react-toast',
             '@radix-ui/react-tooltip',
             '@radix-ui/react-progress'
           ],
-          'ui-components': [
-            'class-variance-authority',
-            'clsx',
-            'tailwind-merge'
-          ],
-          
-          // Heavy libraries
-          'icons': ['lucide-react', 'react-icons'],
-          'math': ['katex', 'react-katex'],
-          
-          // Utilities
-          'utils': ['date-fns', 'zod'],
+          'utils': ['clsx', 'tailwind-merge', 'class-variance-authority', 'date-fns'],
         },
-        
-        // Asset naming
-        assetFileNames: 'assets/[name]-[hash][extname]',
-        chunkFileNames: 'js/[name]-[hash].js',
-        entryFileNames: 'js/[name]-[hash].js',
       },
       
       // Use more parallel operations on Pro tier
       maxParallelFileOps: 5,
-      
-      // Tree shaking
-      treeshake: {
-        moduleSideEffects: false,
-        propertyReadSideEffects: false,
-        tryCatchDeoptimization: false,
-      },
     },
     
     // Optimize CSS
