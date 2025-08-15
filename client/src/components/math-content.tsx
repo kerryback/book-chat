@@ -295,16 +295,10 @@ export function MathContent({ content, className = "" }: MathContentProps) {
             </div>
           );
         } else {
-          // Check if we need spaces around inline math
-          const needsSpaceBefore = expr.start > 0 && text[expr.start - 1] !== ' ';
-          const needsSpaceAfter = expr.end < text.length && text[expr.end] !== ' ';
-          
           parts.push(
-            <React.Fragment key={`math-${i}`}>
-              {needsSpaceBefore ? ' ' : ''}
+            <span key={`math-${i}`} className="inline-block px-1">
               <InlineMath math={expr.content} />
-              {needsSpaceAfter ? ' ' : ''}
-            </React.Fragment>
+            </span>
           );
         }
       } catch (error) {
