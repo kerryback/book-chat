@@ -31,6 +31,9 @@ app.use((req, res, next) => {
       }
 
       log(logLine);
+    } else if (path.startsWith("/assets/")) {
+      // Log asset requests for debugging
+      log(`ASSET: ${req.method} ${path} ${res.statusCode} in ${duration}ms`);
     }
   });
 
