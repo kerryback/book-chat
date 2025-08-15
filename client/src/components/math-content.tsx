@@ -42,56 +42,34 @@ export function MathContent({ content, className = "" }: MathContentProps) {
       });
     });
     
-    // Process block-level elements (headers, blockquotes, paragraphs)
+    // Process block-level elements (headers and paragraphs only - no blockquotes)
     const lines = protectedText.split('\n');
-    let currentBlockquote: string[] = [];
     let i = 0;
-    
-    const flushBlockquote = () => {
-      if (currentBlockquote.length > 0) {
-        const blockquoteContent = currentBlockquote.join('\n').replace(/^>\s?/gm, '');
-        elements.push(
-          <blockquote key={`blockquote-${key++}`} className="border-l-4 border-gray-300 pl-4 my-4 italic text-gray-700">
-            {parseInlineMarkdown(blockquoteContent, mathPlaceholders)}
-          </blockquote>
-        );
-        currentBlockquote = [];
-      }
-    };
     
     while (i < lines.length) {
       const line = lines[i];
       
-      // Handle blockquotes
-      if (line.startsWith('>')) {
-        currentBlockquote.push(line);
-      } else {
-        flushBlockquote();
-        
-        // Handle headers
-        const headerMatch = line.match(/^(#{1,6})\s+(.+)$/);
-        if (headerMatch) {
-          const level = headerMatch[1].length;
-          const headerText = headerMatch[2];
-          const HeaderTag = `h${level}` as keyof JSX.IntrinsicElements;
-          elements.push(
-            <HeaderTag key={`header-${key++}`} className={`font-bold ${level === 1 ? 'text-2xl' : level === 2 ? 'text-xl' : level === 3 ? 'text-lg' : 'text-base'} my-2`}>
-              {parseInlineMarkdown(headerText, mathPlaceholders)}
-            </HeaderTag>
-          );
-        } else if (line.trim()) {
-          // Regular paragraph
-          elements.push(
-            <p key={`paragraph-${key++}`} className="my-2">
-              {parseInlineMarkdown(line, mathPlaceholders)}
-            </p>
-          );
-        }
+      // Handle headers
+      const headerMatch = line.match(/^(#{1,6})\s+(.+)$/);
+      if (headerMatch) {
+        const level = headerMatch[1].length;
+        const headerText = headerMatch[2];
+        const HeaderTag = `h${level}` as keyof JSX.IntrinsicElements;
+        elements.push(
+          <HeaderTag key={`header-${key++}`} className={`font-bold ${level === 1 ? 'text-2xl' : level === 2 ? 'text-xl' : level === 3 ? 'text-lg' : 'text-base'} my-2`}>
+            {parseInlineMarkdown(headerText, mathPlaceholders)}
+          </HeaderTag>
+        );
+      } else if (line.trim()) {
+        // Regular paragraph
+        elements.push(
+          <p key={`paragraph-${key++}`} className="my-2">
+            {parseInlineMarkdown(line, mathPlaceholders)}
+          </p>
+        );
       }
       i++;
     }
-    
-    flushBlockquote(); // Handle any remaining blockquote
     
     return elements.length > 0 ? elements : [<span key="fallback">{restoreMathPlaceholders(protectedText, mathPlaceholders)}</span>];
   };
@@ -212,10 +190,30 @@ export function MathContent({ content, className = "" }: MathContentProps) {
       );
     }
     
-    // Process remaining text for math expressions
-    const remainingText = processedLines.join('\n');
-    if (remainingText.trim()) {
-      parts.push(...renderMathInText(remainingText));
+    // Process remaining text line by line to avoid blockquote parsing
+    for (let i = 0; i < processedLines.length; i++) {
+      const line = processedLines[i];
+      if (line.trim()) {
+        // Check for headers
+        const headerMatch = line.match(/^(#{1,6})\s+(.+)$/);
+        if (headerMatch) {
+          const level = headerMatch[1].length;
+          const headerText = headerMatch[2];
+          const HeaderTag = `h${level}` as keyof JSX.IntrinsicElements;
+          parts.push(
+            <HeaderTag key={`header-${i}`} className={`font-bold ${level === 1 ? 'text-2xl' : level === 2 ? 'text-xl' : level === 3 ? 'text-lg' : 'text-base'} my-2`}>
+              {renderMathInText(headerText)}
+            </HeaderTag>
+          );
+        } else {
+          // Regular paragraph
+          parts.push(
+            <p key={`paragraph-${i}`} className="my-2">
+              {renderMathInText(line)}
+            </p>
+          );
+        }
+      }
     }
     
     return parts.length > 0 ? parts : [<span key="empty">No content</span>];
@@ -304,9 +302,7 @@ export function MathContent({ content, className = "" }: MathContentProps) {
       if (expr.start > lastIndex) {
         const textBefore = text.slice(lastIndex, expr.start).trim();
         if (textBefore) {
-          // Parse simple inline formatting only (bold/italic)
-          const inlineElements = parseInlineMarkdown(textBefore);
-          parts.push(<span key={`text-${i}`}>{inlineElements}</span>);
+          parts.push(<span key={`text-${i}`}>{textBefore}</span>);
         }
       }
 
@@ -338,13 +334,12 @@ export function MathContent({ content, className = "" }: MathContentProps) {
     if (lastIndex < text.length) {
       const remainingText = text.slice(lastIndex).trim();
       if (remainingText) {
-        const inlineElements = parseInlineMarkdown(remainingText);
-        parts.push(<span key="text-end">{inlineElements}</span>);
+        parts.push(<span key="text-end">{remainingText}</span>);
       }
     }
 
-    // If no math expressions found, just parse inline markdown
-    return parts.length > 0 ? parts : parseInlineMarkdown(text);
+    // If no math expressions found, just return plain text
+    return parts.length > 0 ? parts : [<span key="plain-text">{text}</span>];
   };
 
   return (
