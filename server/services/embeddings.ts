@@ -121,6 +121,9 @@ export async function processDocument(document: Document): Promise<void> {
     await storage.updateDocumentChunkCount(document.id, chunks.length);
     await storage.updateDocumentStatus(document.id, "completed");
     
+    // Invalidate cache after processing new document
+    invalidateEmbeddingsCache();
+    
     console.log(`Successfully processed ${document.filename}`);
   } catch (error) {
     console.error(`Error processing document ${document.filename}:`, error);
@@ -135,37 +138,99 @@ export interface SearchResult {
   similarity: number;
 }
 
+// Cache for chunks and documents to avoid repeated database queries
+let chunksCache: { 
+  chunks: DocumentChunk[], 
+  documents: Map<number, Document>, 
+  lastUpdate: number 
+} | null = null;
+
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
+
+async function getCachedChunksAndDocs() {
+  const now = Date.now();
+  
+  // Return cached data if still valid
+  if (chunksCache && (now - chunksCache.lastUpdate) < CACHE_TTL) {
+    return chunksCache;
+  }
+  
+  console.log("[Embeddings] Loading chunks and documents into cache...");
+  const startTime = Date.now();
+  
+  // Get all documents and create a map for O(1) lookup
+  const allDocs = await storage.getAllDocuments();
+  const docsMap = new Map(
+    allDocs
+      .filter(doc => doc.status === "completed")
+      .map(doc => [doc.id, doc])
+  );
+  
+  // Get all chunks with embeddings
+  const allChunks = await storage.getAllChunks();
+  const chunksWithEmbeddings = allChunks.filter(chunk => 
+    chunk.embedding && docsMap.has(chunk.documentId)
+  );
+  
+  chunksCache = {
+    chunks: chunksWithEmbeddings,
+    documents: docsMap,
+    lastUpdate: now
+  };
+  
+  console.log(`[Embeddings] Cache loaded in ${Date.now() - startTime}ms (${chunksWithEmbeddings.length} chunks)`);
+  return chunksCache;
+}
+
+// Call this when documents are added/updated to invalidate cache
+export function invalidateEmbeddingsCache() {
+  chunksCache = null;
+}
+
 export async function searchSimilarChunks(query: string, limit: number = 5): Promise<SearchResult[]> {
   try {
+    const startTime = Date.now();
+    
     // Create embedding for the query
     const queryEmbedding = await createEmbedding(query);
+    console.log(`[Embeddings] Query embedding created in ${Date.now() - startTime}ms`);
     
-    // Get all chunks and their documents
-    const allChunks = await storage.getAllChunks();
+    // Get cached chunks and documents
+    const { chunks, documents } = await getCachedChunksAndDocs();
+    
+    // Process chunks in batches to avoid blocking
     const results: SearchResult[] = [];
+    const BATCH_SIZE = 100;
+    const similarityThreshold = 0.3; // Ignore very dissimilar results
     
-    for (const chunk of allChunks) {
-      if (!chunk.embedding) continue;
+    for (let i = 0; i < chunks.length; i += BATCH_SIZE) {
+      const batch = chunks.slice(i, Math.min(i + BATCH_SIZE, chunks.length));
       
-      const document = await storage.getDocument(chunk.documentId);
-      if (!document || document.status !== "completed") continue;
+      const batchResults = batch
+        .map(chunk => {
+          const similarity = calculateCosineSimilarity(
+            queryEmbedding,
+            chunk.embedding as number[]
+          );
+          
+          return {
+            chunk,
+            document: documents.get(chunk.documentId)!,
+            similarity
+          };
+        })
+        .filter(result => result.similarity > similarityThreshold);
       
-      const similarity = calculateCosineSimilarity(
-        queryEmbedding,
-        chunk.embedding as number[]
-      );
-      
-      results.push({
-        chunk,
-        document,
-        similarity,
-      });
+      results.push(...batchResults);
     }
     
     // Sort by similarity and return top results
-    return results
+    const topResults = results
       .sort((a, b) => b.similarity - a.similarity)
       .slice(0, limit);
+    
+    console.log(`[Embeddings] Search completed in ${Date.now() - startTime}ms (found ${topResults.length} results)`);
+    return topResults;
       
   } catch (error) {
     console.error("Error searching similar chunks:", error);
