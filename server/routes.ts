@@ -252,6 +252,8 @@ $$
 
 Do NOT use \( \) or \[ \] for math delimiters.
 
+CURRENCY: Never use $ when referring to currency amounts. Instead spell out 'dollars' (e.g., "100 dollars" not "$100").
+
 If the context doesn't contain relevant information, say so clearly.
 
 Context from documents:
