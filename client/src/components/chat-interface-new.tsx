@@ -14,20 +14,25 @@ import {
   Trash2,
   Sparkles,
   Upload,
+  X,
+  Check,
 } from "lucide-react";
 import "katex/dist/katex.min.css";
 import { MathContent } from "@/components/math-content";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useTheme } from "@/hooks/useTheme";
 import { Moon, Sun } from "lucide-react";
-import type { ChatMessage } from "@shared/schema";
+import type { ChatMessage, Document } from "@shared/schema";
 
 export default function ChatInterface() {
   const [input, setInput] = useState("");
   const [isComposing, setIsComposing] = useState(false);
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [password, setPassword] = useState("");
+  const [selectedDocIds, setSelectedDocIds] = useState<number[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -43,7 +48,7 @@ export default function ChatInterface() {
     if (password === "upload123") {
       setShowPasswordPrompt(false);
       setPassword("");
-      fileInputRef.current?.click();
+      setShowAdminPanel(true);
     } else {
       toast({
         variant: "destructive",
@@ -93,7 +98,7 @@ export default function ChatInterface() {
   }, [queryClient]);
 
   // Fetch documents for context
-  const { data: documents = [] } = useQuery({
+  const { data: documents = [] } = useQuery<Document[]>({
     queryKey: ["/api/documents"],
   });
 
@@ -176,6 +181,57 @@ export default function ChatInterface() {
     },
   });
 
+  // Delete single document mutation
+  const deleteDocument = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/documents/${id}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Failed to delete document");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+      toast({
+        title: "Success",
+        description: "Document deleted successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete document",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Bulk delete documents mutation
+  const bulkDeleteDocuments = useMutation({
+    mutationFn: async (ids: number[]) => {
+      const response = await fetch("/api/documents/bulk-delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      });
+      if (!response.ok) throw new Error("Failed to delete documents");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+      setSelectedDocIds([]);
+      toast({
+        title: "Success",
+        description: data.message,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete documents",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -199,6 +255,31 @@ export default function ChatInterface() {
     }
   };
 
+  // Helper functions for document selection
+  const toggleDocumentSelection = (id: number) => {
+    setSelectedDocIds(prev => 
+      prev.includes(id) 
+        ? prev.filter(docId => docId !== id)
+        : [...prev, id]
+    );
+  };
+
+  const selectAllDocuments = () => {
+    if (selectedDocIds.length === documents.length) {
+      setSelectedDocIds([]);
+    } else {
+      setSelectedDocIds(documents.map(doc => doc.id));
+    }
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedDocIds.length === 0) return;
+    
+    if (confirm(`Are you sure you want to delete ${selectedDocIds.length} document(s)?`)) {
+      bulkDeleteDocuments.mutate(selectedDocIds);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       {/* Header */}
@@ -215,10 +296,10 @@ export default function ChatInterface() {
             />
             <Button
               variant="secondary"
-              size="xs"
+              size="sm"
               onClick={handleUploadClick}
               disabled={uploadFile.isPending}
-              className="bg-gray-300 hover:bg-gray-400 text-gray-700 dark:bg-gray-400 dark:hover:bg-gray-300 dark:text-gray-800 text-xs px-2 py-1"
+              className="bg-gray-300 hover:bg-gray-400 text-gray-700 dark:bg-gray-400 dark:hover:bg-gray-300 dark:text-gray-800"
             >
               <Upload className="w-3 h-3 mr-1" />
               {uploadFile.isPending ? "Uploading..." : "Upload (authors only)"}
@@ -241,10 +322,10 @@ export default function ChatInterface() {
           <div className="flex items-center gap-2 flex-1 justify-end">
             <Button
               variant="secondary"
-              size="xs"
+              size="sm"
               onClick={() => clearHistory.mutate()}
               disabled={clearHistory.isPending}
-              className="bg-gray-300 hover:bg-gray-400 text-gray-700 dark:bg-gray-400 dark:hover:bg-gray-300 dark:text-gray-800 text-xs px-2 py-1"
+              className="bg-gray-300 hover:bg-gray-400 text-gray-700 dark:bg-gray-400 dark:hover:bg-gray-300 dark:text-gray-800"
             >
               <Trash2 className="w-3 h-3 mr-1" />
               Clear
@@ -404,6 +485,140 @@ export default function ChatInterface() {
                 Submit
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Admin Document Management Panel */}
+      <Dialog open={showAdminPanel} onOpenChange={setShowAdminPanel}>
+        <DialogContent className="sm:max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Document Management</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto">
+            <div className="space-y-4">
+              {/* Upload Section */}
+              <div className="border rounded-lg p-4 bg-muted/50">
+                <h3 className="text-sm font-medium mb-2">Upload New Documents</h3>
+                <Button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadFile.isPending}
+                  className="w-full"
+                  variant="outline"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  {uploadFile.isPending ? "Uploading..." : "Select .qmd Files"}
+                </Button>
+              </div>
+
+              {/* Document List Section */}
+              <div className="border rounded-lg p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-medium">Current Documents ({documents.length})</h3>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={selectAllDocuments}
+                      disabled={documents.length === 0}
+                    >
+                      {selectedDocIds.length === documents.length ? (
+                        <>
+                          <X className="w-4 h-4 mr-1" />
+                          Deselect All
+                        </>
+                      ) : (
+                        <>
+                          <Check className="w-4 h-4 mr-1" />
+                          Select All
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleDeleteSelected}
+                      disabled={selectedDocIds.length === 0 || bulkDeleteDocuments.isPending}
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      Delete Selected ({selectedDocIds.length})
+                    </Button>
+                  </div>
+                </div>
+
+                {documents.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    No documents uploaded yet
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {documents.map((doc) => (
+                      <div
+                        key={doc.id}
+                        className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                      >
+                        <Checkbox
+                          checked={selectedDocIds.includes(doc.id)}
+                          onCheckedChange={() => toggleDocumentSelection(doc.id)}
+                          className="flex-shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                            <span className="text-sm font-medium truncate">
+                              {doc.filename}
+                            </span>
+                          </div>
+                          {doc.chapterTitle && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Chapter: {doc.chapterTitle}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-4 mt-1">
+                            <span className="text-xs text-muted-foreground">
+                              {doc.chunkCount} chunks
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(doc.createdAt).toLocaleDateString()}
+                            </span>
+                            <Badge
+                              variant={
+                                doc.status === "completed"
+                                  ? "default"
+                                  : doc.status === "error"
+                                  ? "destructive"
+                                  : "secondary"
+                              }
+                              className="text-xs"
+                            >
+                              {doc.status}
+                            </Badge>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            if (confirm(`Delete "${doc.filename}"?`)) {
+                              deleteDocument.mutate(doc.id);
+                            }
+                          }}
+                          disabled={deleteDocument.isPending}
+                          className="flex-shrink-0"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 pt-4 border-t">
+            <Button variant="outline" onClick={() => setShowAdminPanel(false)}>
+              Close
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

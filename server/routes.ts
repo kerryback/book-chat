@@ -111,6 +111,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk delete documents
+  app.post("/api/documents/bulk-delete", async (req, res) => {
+    try {
+      const { ids } = req.body;
+      
+      if (!Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ message: "Invalid or empty document IDs array" });
+      }
+
+      // Validate all IDs are numbers
+      const validIds = ids.filter(id => typeof id === 'number' && !isNaN(id));
+      if (validIds.length !== ids.length) {
+        return res.status(400).json({ message: "All document IDs must be valid numbers" });
+      }
+
+      // Delete each document
+      const results = await Promise.all(
+        validIds.map(async (id) => {
+          try {
+            const document = await storage.getDocument(id);
+            if (document) {
+              await storage.deleteDocument(id);
+              return { id, success: true, filename: document.filename };
+            }
+            return { id, success: false, error: "Document not found" };
+          } catch (error) {
+            return { id, success: false, error: error.message };
+          }
+        })
+      );
+
+      const successCount = results.filter(r => r.success).length;
+      const failedCount = results.filter(r => !r.success).length;
+
+      res.json({ 
+        message: `Deleted ${successCount} documents${failedCount > 0 ? `, ${failedCount} failed` : ''}`,
+        results 
+      });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Get chat messages
   app.get("/api/chat/messages", async (req, res) => {
     try {
