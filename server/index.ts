@@ -9,12 +9,12 @@ app.use(express.urlencoded({ extended: false }));
 
 // Security headers for iframe compatibility
 app.use((_req, res, next) => {
-  // Remove X-Frame-Options to allow iframe embedding
-  res.removeHeader('X-Frame-Options');
-  
-  // Set permissive CSP that allows iframe embedding
-  res.setHeader('Content-Security-Policy', "frame-ancestors *;");
-  
+  // Explicitly set X-Frame-Options to allow all (or remove this line to not set it at all)
+  res.setHeader('X-Frame-Options', 'ALLOWALL');
+
+  // Set permissive CSP that allows iframe embedding from any origin
+  res.setHeader('Content-Security-Policy', "frame-ancestors 'self' *");
+
   next();
 });
 
