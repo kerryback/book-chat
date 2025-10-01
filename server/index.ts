@@ -7,6 +7,17 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Security headers for iframe compatibility
+app.use((_req, res, next) => {
+  // Remove X-Frame-Options to allow iframe embedding
+  res.removeHeader('X-Frame-Options');
+  
+  // Set permissive CSP that allows iframe embedding
+  res.setHeader('Content-Security-Policy', "frame-ancestors *;");
+  
+  next();
+});
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
