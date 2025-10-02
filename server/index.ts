@@ -13,7 +13,8 @@ app.use((_req, res, next) => {
   // (X-Frame-Options is deprecated in favor of CSP frame-ancestors)
 
   // Set permissive CSP that allows iframe embedding from any origin
-  res.setHeader('Content-Security-Policy', "frame-ancestors *");
+  // Also allow all sources for scripts, styles, fonts, etc. to work in iframe
+  res.setHeader('Content-Security-Policy', "frame-ancestors *; default-src * 'unsafe-inline' 'unsafe-eval' data: blob:");
 
   next();
 });
